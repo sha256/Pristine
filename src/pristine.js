@@ -33,24 +33,18 @@ const SELECTOR = "input:not([type^=hidden]):not([type^=button]), select, textare
 
 const allowedAttributes = ["required", "min", "max", 'minlength', 'maxlength'];
 
-function _addValidatorToField(fns, params, name, value) {
-    let validator = validators[name];
-    if (validator) {
-        fns.push(validator);
-        if (value) {
-            params[name] = value.split(',');
-        }
-    }
-}
+export function Pristine(form, config, online){
+    
+    let self = this;
 
-export class Pristine {
-
-    constructor(form, config, online){
-        this.config = config || defaultConfig;
-        this.online = !(online === false);
-        this.valid = undefined;
-        this.form = form;
-        this.fields = Array.from(form.querySelectorAll(SELECTOR)).map(function (input) {
+    init(form, config, online);
+    
+    function init(form, config, online){
+        self.config = config || defaultConfig;
+        self.online = !(online === false);
+        self.valid = undefined;
+        self.form = form;
+        self.fields = Array.from(form.querySelectorAll(SELECTOR)).map(function (input) {
 
             let fns = [];
             let params = {};
@@ -76,46 +70,47 @@ export class Pristine {
                return b.priority - a.priority;
             });
 
-            this.online && input.addEventListener((!~['radio', 'checkbox'].indexOf(input.getAttribute('type')) ? 'input':'change'), function(e) {
-                this.validate(e.target);
-            }.bind(this));
+            self.online && input.addEventListener((!~['radio', 'checkbox'].indexOf(input.getAttribute('type')) ? 'input':'change'), function(e) {
+                self.validate(e.target);
+            }.bind(self));
 
             input.pristine = {input, validators: fns, params};
             return input.pristine;
 
-        }.bind(this));
+        }.bind(self));
     }
 
-    validate(input, silent){
+    self.validate = function(input, silent){
         silent = (input && silent === true) || input === true;
         let fields = typeof input === "object" ? (input.length ? input : [input]) : null;
-        fields = fields ? Array.from(fields).map((f)=> f.pristine) : this.fields;
-
-        for(let field of fields){
-            let valid = this._validateField(field);
+        fields = fields ? Array.from(fields).map((f)=> f.pristine) : self.fields;
+        for(let i in fields){
+            let field = fields[i];
+            let valid = _validateField(field);
             field.input.pristine.messages = field.messages;
             if (valid){
-                !silent && this._showSuccess(field);
+                !silent && _showSuccess(field);
             } else {
-                this.valid = false;
-                !silent && this._showError(field, field.messages);
+                self.valid = false;
+                !silent && _showError(field, field.messages);
             }
         }
-        return this.valid;
-    }
+        return self.valid;
+    };
 
-    isValid(){
-        return this.valid;
-    }
+    self.isValid = function () {
+        return self.valid;
+    };
 
-    getErrorMessages(input) {
+    self.getErrorMessages = function(input) {
         return input.length ? input[0].pristine.messages : input.pristine.messages;
-    }
+    };
 
-    _validateField(field){
+    function _validateField(field){
         let messages = [];
         let valid = true;
-        for(let validator of field.validators){
+        for(let i in field.validators){
+            let validator = field.validators[i];
             var params = field.params[validator.name] ? field.params[validator.name] : [];
             // input value of select element
             if (!validator.fn(field.input.value, field.input, ...params)){
@@ -130,7 +125,7 @@ export class Pristine {
         return valid;
     }
 
-    static addValidator(elemOrName, fn, msg, priority, halt){
+    self.addValidator = function(elemOrName, fn, msg, priority, halt){
         if (typeof elemOrName === 'string'){
             _(elemOrName, {fn, msg, priority, halt});
         } else if (typeof elemOrName === 'object'){
@@ -141,23 +136,24 @@ export class Pristine {
             });
         }
 
-    }
+    };
 
-    _showError(field, messages){
-        let [errorClassElement, errorTextParent] = this._removeError(field);
-        errorClassElement.classList.add(this.config.errorClass);
+    function _showError(field, messages){
+        let ret = _removeError(field);
+        let errorClassElement = ret[0], errorTextParent = ret[1];
+        errorClassElement.classList.add(self.config.errorClass);
 
-        let elem = document.createElement(this.config.errorTextTag);
-        elem.className = PRISTINE_ERROR + ' ' + this.config.errorTextClass;
+        let elem = document.createElement(self.config.errorTextTag);
+        elem.className = PRISTINE_ERROR + ' ' + self.config.errorTextClass;
         elem.innerHTML = messages.join('<br/>');
         errorTextParent.appendChild(elem);
     }
 
-    _removeError(field){
-        let errorClassElement = utils.findAncestor(field.input, this.config.classTo);
-        errorClassElement.classList.remove(this.config.errorClass, this.config.successClass);
+    function _removeError(field){
+        let errorClassElement = utils.findAncestor(field.input, self.config.classTo);
+        errorClassElement.classList.remove(self.config.errorClass, self.config.successClass);
 
-        let errorTextParent = utils.findAncestor(field.input, this.config.errorTextParent);
+        let errorTextParent = utils.findAncestor(field.input, self.config.errorTextParent);
         var existing = errorTextParent.querySelector('.' + PRISTINE_ERROR);
         if (existing){
             existing.parentNode.removeChild(existing);
@@ -165,29 +161,40 @@ export class Pristine {
         return [errorClassElement, errorTextParent]
     }
 
-    _showSuccess(field){
-        let [errorClassElement, errorTextParent] = this._removeError(field);
-        errorClassElement.classList.add(this.config.successClass);
+    function _showSuccess(field){
+        let errorClassElement = _removeError(field)[0];
+        errorClassElement.classList.add(self.config.successClass);
     }
 
-    reset(){
-        var self = this;
-        Array.from(this.form.querySelectorAll('.' + PRISTINE_ERROR)).map(function (elem) {
+    self.reset = function () {
+        Array.from(self.form.querySelectorAll('.' + PRISTINE_ERROR)).map(function (elem) {
             elem.parentNode.removeChild(elem);
         });
-        Array.from(this.form.querySelectorAll('.' + this.config.classTo)).map(function (elem) {
+        Array.from(self.form.querySelectorAll('.' + self.config.classTo)).map(function (elem) {
             elem.classList.remove(self.config.successClass, self.config.errorClass);
         });
 
-    }
+    };
 
-    destroy(){
-        this.reset();
-        this.fields.forEach(function (field) {
+    self.destroy = function(){
+        self.reset();
+        self.fields.forEach(function (field) {
             delete field.input.pristine;
         });
-        this.fields = [];
+        self.fields = [];
+    };
+
+    function _addValidatorToField(fns, params, name, value) {
+        let validator = validators[name];
+        if (validator) {
+            fns.push(validator);
+            if (value) {
+                params[name] = value.split(',');
+            }
+        }
     }
+
+    return self;
 
 }
 
