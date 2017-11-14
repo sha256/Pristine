@@ -33,7 +33,7 @@ const SELECTOR = "input:not([type^=hidden]):not([type^=button]), select, textare
 
 const allowedAttributes = ["required", "min", "max", 'minlength', 'maxlength'];
 
-export function Pristine(form, config, online){
+export default function Pristine(form, config, online){
     
     let self = this;
 
@@ -82,8 +82,16 @@ export function Pristine(form, config, online){
 
     self.validate = function(input, silent){
         silent = (input && silent === true) || input === true;
-        let fields = typeof input === "object" ? (input.length ? input : [input]) : null;
-        fields = fields ? Array.from(fields).map((f)=> f.pristine) : self.fields;
+
+        let fields = self.fields;
+        if (input !== true && input !== false){
+            if (input instanceof HTMLElement) {
+                fields = [input.pristine];
+            } else if (input instanceof NodeList || input instanceof (window.$ || Array) || input instanceof Array){
+                fields = Array.from(input).map(el => el.pristine);
+            }
+        }
+
         for(let i in fields){
             let field = fields[i];
             let valid = _validateField(field);
@@ -111,7 +119,7 @@ export function Pristine(form, config, online){
         let valid = true;
         for(let i in field.validators){
             let validator = field.validators[i];
-            var params = field.params[validator.name] ? field.params[validator.name] : [];
+            let params = field.params[validator.name] ? field.params[validator.name] : [];
             // input value of select element
             if (!validator.fn(field.input.value, field.input, ...params)){
                 valid = false;
@@ -194,10 +202,10 @@ export function Pristine(form, config, online){
         }
     }
 
+    self.setGlobalConfig = function (config) {
+        defaultConfig = config;
+    };
+
     return self;
 
-}
-
-export function setConfig(config) {
-    defaultConfig = config;
 }
