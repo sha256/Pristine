@@ -1,0 +1,46 @@
+.form-container {
+    margin: 80px auto;
+    width: 300px;
+}
+
+.form-group {
+    margin-bottom: 10px;
+}
+
+.btn {
+    background: #1c94ff;
+    padding: 4px 8px;
+    border: none;
+    box-shadow: 2px 1px 1px #d3d3d3;
+    color: #fff;
+    outline: none;
+    font-size: 17px;
+    cursor: pointer;
+}
+
+label {
+    display: block;
+    margin-bottom: 2px;
+}
+
+.form-group .form-control {
+    width: 100%;
+    outline: none;
+    padding: 5px;
+    border: none;
+    background: #d1d1d1;
+    border-bottom: 2px solid #1c94ff;
+    font-size: 16px;
+}
+
+.has-success .form-control {
+    border-bottom: 2px solid #168b3f;
+}
+
+.has-danger .form-control {
+    border-bottom: 2px solid #dc1d34;
+}
+
+.form-group .text-help {
+    color: #dc1d34;
+}
