@@ -11,6 +11,8 @@ let defaultConfig = {
 };
 
 const PRISTINE_ERROR = 'pristine-error';
+const SELECTOR = "input:not([type^=hidden]):not([type^=submit]), select, textarea";
+const ALLOWED_ATTRIBUTES = ["required", "min", "max", 'minlength', 'maxlength'];
 
 const validators = {};
 
@@ -29,10 +31,6 @@ _('min', {fn: (val, input, limit) => parseFloat(val) >= parseFloat(limit), msg: 
 _('max', {fn: (val, input, limit) => parseFloat(val) <= parseFloat(limit), msg: 'wrrr', priority: 1});
 
 
-const SELECTOR = "input:not([type^=hidden]):not([type^=button]), select, textarea";
-
-const allowedAttributes = ["required", "min", "max", 'minlength', 'maxlength'];
-
 export default function Pristine(form, config, online){
     
     let self = this;
@@ -42,14 +40,12 @@ export default function Pristine(form, config, online){
     function init(form, config, online){
         self.config = config || defaultConfig;
         self.online = !(online === false);
-        self.valid = undefined;
-        self.form = form;
         self.fields = Array.from(form.querySelectorAll(SELECTOR)).map(function (input) {
 
             let fns = [];
             let params = {};
 
-            allowedAttributes.forEach(function (item) {
+            ALLOWED_ATTRIBUTES.forEach(function (item) {
                 let val = input.getAttribute(item);
                 if (val !== null){
                     _addValidatorToField(fns, params, item, val);
@@ -82,7 +78,6 @@ export default function Pristine(form, config, online){
 
     self.validate = function(input, silent){
         silent = (input && silent === true) || input === true;
-
         let fields = self.fields;
         if (input !== true && input !== false){
             if (input instanceof HTMLElement) {
@@ -92,22 +87,18 @@ export default function Pristine(form, config, online){
             }
         }
 
+        let valid = true;
+
         for(let i in fields){
             let field = fields[i];
-            let valid = _validateField(field);
-            field.input.pristine.messages = field.messages;
-            if (valid){
+            if (_validateField(field)){
                 !silent && _showSuccess(field);
             } else {
-                self.valid = false;
+                valid = false;
                 !silent && _showError(field, field.messages);
             }
         }
-        return self.valid;
-    };
-
-    self.isValid = function () {
-        return self.valid;
+        return valid;
     };
 
     self.getErrorMessages = function(input) {
