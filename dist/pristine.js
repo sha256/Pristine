@@ -203,10 +203,10 @@ function Pristine(form, config, online) {
 
     function _removeError(field) {
         var errorClassElement = findAncestor(field.input, self.config.classTo);
-        errorClassElement.classList.remove(self.config.errorClass, self.config.successClass);
+        errorClassElement && errorClassElement.classList.remove(self.config.errorClass, self.config.successClass);
 
         var errorTextParent = findAncestor(field.input, self.config.errorTextParent);
-        var existing = errorTextParent.querySelector('.' + PRISTINE_ERROR);
+        var existing = errorTextParent ? errorTextParent.querySelector('.' + PRISTINE_ERROR) : null;
         if (existing) {
             existing.parentNode.removeChild(existing);
         }
@@ -215,7 +215,7 @@ function Pristine(form, config, online) {
 
     function _showSuccess(field) {
         var errorClassElement = _removeError(field)[0];
-        errorClassElement.classList.add(self.config.successClass);
+        errorClassElement && errorClassElement.classList.add(self.config.successClass);
     }
 
     self.reset = function () {
