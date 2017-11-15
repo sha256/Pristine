@@ -89,6 +89,7 @@ function Pristine(form, config, online) {
     init(form, config, online);
 
     function init(form, config, online) {
+        self.form = form;
         self.config = config || defaultConfig;
         self.online = !(online === false);
         self.fields = Array.from(form.querySelectorAll(SELECTOR)).map(function (input) {
