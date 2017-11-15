@@ -1,6 +1,5 @@
 *~
 .DS_Store
 .idea/*
-dist/*
 package-lock.json
 node_modules/*
