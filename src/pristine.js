@@ -28,10 +28,10 @@ _('text', {fn: (val) => true, priority: 0});
 _('required', {fn: (val) => val !== '', priority: 99, halt: true});
 _('email', {fn: (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val), priority: 1});
 _('number', {fn: (val) => parseFloat(val), priority: 1});
-_('minlength', {fn: (val, input, length) => val && val.length >= parseInt(length), priority: 1});
-_('maxlength', {fn: (val, input, length) => val && val.length <= parseInt(length), priority: 1});
-_('min', {fn: (val, input, limit) => parseFloat(val) >= parseFloat(limit), priority: 1});
-_('max', {fn: (val, input, limit) => parseFloat(val) <= parseFloat(limit), priority: 1});
+_('minlength', {fn: (val, length) => console.log(val, length) || val && val.length >= parseInt(length), priority: 1});
+_('maxlength', {fn: (val, length) => val && val.length <= parseInt(length), priority: 1});
+_('min', {fn: (val, limit) => parseFloat(val) >= parseFloat(limit), priority: 1});
+_('max', {fn: (val, limit) => parseFloat(val) <= parseFloat(limit), priority: 1});
 
 
 function findAncestor (el, cls) {
@@ -39,8 +39,8 @@ function findAncestor (el, cls) {
     return el;
 }
 
-function tmpl(str, o) {
-    return str.replace(/\${([^{}]*)}/g, (a, b) => o[b]);
+function tmpl(o) {
+    return this.replace(/\${([^{}]*)}/g, (a, b) => arguments[b]);
 }
 
 export default function Pristine(form, config, online){
@@ -124,9 +124,10 @@ export default function Pristine(form, config, online){
         for(let i in field.validators){
             let validator = field.validators[i];
             let params = field.params[validator.name] ? field.params[validator.name] : [];
-            if (!validator.fn(field.input.value, field.input, ...params)){
+            params[0] = field.input.value;
+            if (!validator.fn.apply(field.input, params)){
                 valid = false;
-                messages.push(tmpl(validator.msg, field.input.value, ...params));
+                messages.push(tmpl.apply(validator.msg, params));
                 if (validator.halt === true){
                     break;
                 }
@@ -139,7 +140,7 @@ export default function Pristine(form, config, online){
     self.addValidator = function(elemOrName, fn, msg, priority, halt){
         if (typeof elemOrName === 'string'){
             _(elemOrName, {fn, msg, priority, halt});
-        } else if (typeof elemOrName === 'object'){
+        } else if (elemOrName instanceof HTMLElement){
             //TODO check if pristine field
             elemOrName.pristine.validators.push({fn, msg, priority, halt});
             elemOrName.pristine.validators.sort(function (a, b) {
@@ -200,7 +201,9 @@ export default function Pristine(form, config, online){
         if (validator) {
             fns.push(validator);
             if (value) {
-                params[name] = value.split(',');
+                let valueParams = value.split(',');
+                valueParams.unshift(null); // placeholder for input's value
+                params[name] = valueParams;
             }
         }
     }

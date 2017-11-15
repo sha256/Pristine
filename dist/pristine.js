@@ -10,30 +10,10 @@ var lang = {
     number: "This field requires a number",
     url: "This field requires a valid website URL",
     tel: "This field requires a valid telephone number",
-    maxLength: "This fields length must be < '{maxLength}",
-    minLength: "This fields length must be > '{minLength}"
-};
-
-function findAncestor(el, cls) {
-    while ((el = el.parentElement) && !el.classList.contains(cls)) {}
-    return el;
-}
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-  return typeof obj;
-} : function (obj) {
-  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-};
-
-
-var toConsumableArray = function (arr) {
-  if (Array.isArray(arr)) {
-    for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
-
-    return arr2;
-  } else {
-    return Array.from(arr);
-  }
+    maxlength: "This fields length must be < ${1}",
+    minlength: "This fields length must be > ${1}",
+    min: "Minimum value for this field is ${1}",
+    max: "Maximum value for this field is ${1}"
 };
 
 var defaultConfig = {
@@ -53,6 +33,8 @@ var validators = {};
 
 var _ = function _(name, validator) {
     validator.name = name;
+    if (!validator.msg) validator.msg = lang[name];
+    if (validator.priority === undefined) validator.priority = 1;
     validators[name] = validator;
 };
 
@@ -61,26 +43,39 @@ _('text', { fn: function fn(val) {
     }, priority: 0 });
 _('required', { fn: function fn(val) {
         return val !== '';
-    }, msg: lang['required'], priority: 99, halt: true });
+    }, priority: 99, halt: true });
 _('email', { fn: function fn(val) {
         return (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)
         );
-    }, msg: lang['email'], priority: 1 });
+    }, priority: 1 });
 _('number', { fn: function fn(val) {
         return parseFloat(val);
-    }, msg: lang['number'], priority: 1 });
-_('minlength', { fn: function fn(val, input, length) {
-        return val && val.length >= parseInt(length);
-    }, msg: 'wrrr', priority: 1 });
-_('maxlength', { fn: function fn(val, input, length) {
+    }, priority: 1 });
+_('minlength', { fn: function fn(val, length) {
+        return console.log(val, length) || val && val.length >= parseInt(length);
+    }, priority: 1 });
+_('maxlength', { fn: function fn(val, length) {
         return val && val.length <= parseInt(length);
-    }, msg: 'wrrr', priority: 1 });
-_('min', { fn: function fn(val, input, limit) {
+    }, priority: 1 });
+_('min', { fn: function fn(val, limit) {
         return parseFloat(val) >= parseFloat(limit);
-    }, msg: 'wrrr', priority: 1 });
-_('max', { fn: function fn(val, input, limit) {
+    }, priority: 1 });
+_('max', { fn: function fn(val, limit) {
         return parseFloat(val) <= parseFloat(limit);
-    }, msg: 'wrrr', priority: 1 });
+    }, priority: 1 });
+
+function findAncestor(el, cls) {
+    while ((el = el.parentElement) && !el.classList.contains(cls)) {}
+    return el;
+}
+
+function tmpl(o) {
+    var _arguments = arguments;
+
+    return this.replace(/\${([^{}]*)}/g, function (a, b) {
+        return _arguments[b];
+    });
+}
 
 function Pristine(form, config, online) {
 
@@ -164,10 +159,10 @@ function Pristine(form, config, online) {
         for (var i in field.validators) {
             var validator = field.validators[i];
             var params = field.params[validator.name] ? field.params[validator.name] : [];
-            // input value of select element
-            if (!validator.fn.apply(validator, [field.input.value, field.input].concat(toConsumableArray(params)))) {
+            params[0] = field.input.value;
+            if (!validator.fn.apply(field.input, params)) {
                 valid = false;
-                messages.push(validator.msg);
+                messages.push(tmpl.apply(validator.msg, params));
                 if (validator.halt === true) {
                     break;
                 }
@@ -180,7 +175,7 @@ function Pristine(form, config, online) {
     self.addValidator = function (elemOrName, fn, msg, priority, halt) {
         if (typeof elemOrName === 'string') {
             _(elemOrName, { fn: fn, msg: msg, priority: priority, halt: halt });
-        } else if ((typeof elemOrName === 'undefined' ? 'undefined' : _typeof(elemOrName)) === 'object') {
+        } else if (elemOrName instanceof HTMLElement) {
             //TODO check if pristine field
             elemOrName.pristine.validators.push({ fn: fn, msg: msg, priority: priority, halt: halt });
             elemOrName.pristine.validators.sort(function (a, b) {
@@ -193,12 +188,12 @@ function Pristine(form, config, online) {
         var ret = _removeError(field);
         var errorClassElement = ret[0],
             errorTextParent = ret[1];
-        errorClassElement.classList.add(self.config.errorClass);
+        errorClassElement && errorClassElement.classList.add(self.config.errorClass);
 
         var elem = document.createElement(self.config.errorTextTag);
         elem.className = PRISTINE_ERROR + ' ' + self.config.errorTextClass;
         elem.innerHTML = messages.join('<br/>');
-        errorTextParent.appendChild(elem);
+        errorTextParent && errorTextParent.appendChild(elem);
     }
 
     function _removeError(field) {
@@ -240,7 +235,9 @@ function Pristine(form, config, online) {
         if (validator) {
             fns.push(validator);
             if (value) {
-                params[name] = value.split(',');
+                var valueParams = value.split(',');
+                valueParams.unshift(null); // placeholder for input's value
+                params[name] = valueParams;
             }
         }
     }
