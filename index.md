@@ -1,4 +1,6 @@
 # Pristine - Vanilla javascript form validation library
+{:.hide}
+{:#xid}
 
 ## Install
 
