@@ -1,5 +1,4 @@
 import { lang } from './lang';
-import * as utils from './utils';
 
 let defaultConfig = {
     classTo: 'form-group',
@@ -18,18 +17,31 @@ const validators = {};
 
 const _ = function (name, validator) {
     validator.name = name;
+    if (!validator.msg)
+        validator.msg = lang[name];
+    if (validator.priority === undefined)
+        validator.priority = 1;
     validators[name] = validator;
 };
 
 _('text', {fn: (val) => true, priority: 0});
-_('required', {fn: (val) => val !== '', msg: lang['required'], priority: 99, halt: true});
-_('email', {fn: (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val), msg: lang['email'], priority: 1});
-_('number', {fn: (val) => parseFloat(val), msg: lang['number'], priority: 1});
-_('minlength', {fn: (val, input, length) => val && val.length >= parseInt(length), msg: 'wrrr', priority: 1});
-_('maxlength', {fn: (val, input, length) => val && val.length <= parseInt(length), msg: 'wrrr', priority: 1});
-_('min', {fn: (val, input, limit) => parseFloat(val) >= parseFloat(limit), msg: 'wrrr', priority: 1});
-_('max', {fn: (val, input, limit) => parseFloat(val) <= parseFloat(limit), msg: 'wrrr', priority: 1});
+_('required', {fn: (val) => val !== '', priority: 99, halt: true});
+_('email', {fn: (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val), priority: 1});
+_('number', {fn: (val) => parseFloat(val), priority: 1});
+_('minlength', {fn: (val, input, length) => val && val.length >= parseInt(length), priority: 1});
+_('maxlength', {fn: (val, input, length) => val && val.length <= parseInt(length), priority: 1});
+_('min', {fn: (val, input, limit) => parseFloat(val) >= parseFloat(limit), priority: 1});
+_('max', {fn: (val, input, limit) => parseFloat(val) <= parseFloat(limit), priority: 1});
 
+
+function findAncestor (el, cls) {
+    while ((el = el.parentElement) && !el.classList.contains(cls));
+    return el;
+}
+
+function tmpl(str, o) {
+    return str.replace(/\${([^{}]*)}/g, (a, b) => o[b]);
+}
 
 export default function Pristine(form, config, online){
     
@@ -112,10 +124,9 @@ export default function Pristine(form, config, online){
         for(let i in field.validators){
             let validator = field.validators[i];
             let params = field.params[validator.name] ? field.params[validator.name] : [];
-            // input value of select element
             if (!validator.fn(field.input.value, field.input, ...params)){
                 valid = false;
-                messages.push(validator.msg);
+                messages.push(tmpl(validator.msg, field.input.value, ...params));
                 if (validator.halt === true){
                     break;
                 }
@@ -141,19 +152,19 @@ export default function Pristine(form, config, online){
     function _showError(field, messages){
         let ret = _removeError(field);
         let errorClassElement = ret[0], errorTextParent = ret[1];
-        errorClassElement.classList.add(self.config.errorClass);
+        errorClassElement && errorClassElement.classList.add(self.config.errorClass);
 
         let elem = document.createElement(self.config.errorTextTag);
         elem.className = PRISTINE_ERROR + ' ' + self.config.errorTextClass;
         elem.innerHTML = messages.join('<br/>');
-        errorTextParent.appendChild(elem);
+        errorTextParent && errorTextParent.appendChild(elem);
     }
 
     function _removeError(field){
-        let errorClassElement = utils.findAncestor(field.input, self.config.classTo);
+        let errorClassElement = findAncestor(field.input, self.config.classTo);
         errorClassElement && errorClassElement.classList.remove(self.config.errorClass, self.config.successClass);
 
-        let errorTextParent = utils.findAncestor(field.input, self.config.errorTextParent);
+        let errorTextParent = findAncestor(field.input, self.config.errorTextParent);
         var existing = errorTextParent ? errorTextParent.querySelector('.' + PRISTINE_ERROR) : null;
         if (existing){
             existing.parentNode.removeChild(existing);

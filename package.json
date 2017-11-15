@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sha256/pristinejs.git"
+    "url": "git+https://github.com/sha256/Pristine.git"
   },
   "keywords": [
     "vanilla",
@@ -21,9 +21,9 @@
   "author": "Shamim Hasnath",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/sha256/pristinejs/issues"
+    "url": "https://github.com/sha256/Pristine/issues"
   },
-  "homepage": "https://github.com/sha256/pristinejs#readme",
+  "homepage": "https://github.com/sha256/Pristine#readme",
   "devDependencies": {
     "babel-core": "^6.26.0",
     "babel-plugin-external-helpers": "^6.22.0",

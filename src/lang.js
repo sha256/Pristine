@@ -4,6 +4,6 @@ export const lang = {
     number: "This field requires a number",
     url: "This field requires a valid website URL",
     tel: "This field requires a valid telephone number",
-    maxLength: "This fields length must be < '{maxLength}",
-    minLength: "This fields length must be > '{minLength}"
+    maxlength: "This fields length must be < ${1}",
+    minlength: "This fields length must be > ${1}"
 };
