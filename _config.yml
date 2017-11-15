@@ -3,3 +3,4 @@ show_downloads: true
 google_analytics: false
 pristine:
   name: "PristineJS"
+  dl_url: https://github.com/sha256/Pristine/zipball/master
