@@ -2,11 +2,8 @@
 {:.hide}
 {:#xid}
 
-## Install
+**~4kb minified, ~2kb gzipped, no dependencies**
 
-```sh
-$ npm install pristinejs --save
-```
 
 ## Usage
 
@@ -39,13 +36,22 @@ window.onload = function () {
 
 **That's it**
 
-It automatically validates `required, min, max, minlength, maxlength` and type attributes like `email, number` amd more
+It automatically validates `required, min, max, minlength, maxlength` attributes and the value of type attributes
+ like `email, number` and more..
+ 
+ 
+## Install
+
+```sh
+$ npm install pristinejs --save
+```
+
 
 `Pristine` takes `3` parameters
 
 - **form** The form element
 
-- **config** A object containing the configuration. Default is bootstrap's configuration which is 
+- **config** An object containing the configuration. Default is bootstrap's configuration which is 
 
 ```javascript
 let defaultConfig = {
@@ -62,7 +68,7 @@ let defaultConfig = {
 };
 ```
 
-- **online** boolean value indicating whether pristine should validate as you type, default is `true`
+- **online** A boolean value indicating whether pristine should validate as you type, default is `true`
 
 
 ## Custom Validator
@@ -94,7 +100,7 @@ Pristine.addValidator("my-range", function(value, elem, val1, val2) {
     
     return parseInt(val1) <= value && value <= parseInt(val2)
     
-}, "The value must be between {$0} and {$1}", 5, false);
+}, "The value (${0}) must be between ${1} and ${2}", 5, false);
 ```
 
 Now you can assign it to your inputs like this 
@@ -102,3 +108,6 @@ Now you can assign it to your inputs like this
 ```html
 <input type="text" class="form-control" data-pristine-my-range="10,30" />
 ```
+
+> The goal of this library is not to provide every possible type of validation and thus becoming a bloat. 
+> The goal is to provide most common types of validations and a neat way to add custom validators.
