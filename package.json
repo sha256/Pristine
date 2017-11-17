@@ -1,6 +1,6 @@
 {
   "name": "pristinejs",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A tiny vanilla javascript form validation library",
   "main": "dist/pristine.js",
   "scripts": {

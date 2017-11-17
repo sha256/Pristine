@@ -13,7 +13,8 @@ var lang = {
     maxlength: "This fields length must be < ${1}",
     minlength: "This fields length must be > ${1}",
     min: "Minimum value for this field is ${1}",
-    max: "Maximum value for this field is ${1}"
+    max: "Maximum value for this field is ${1}",
+    pattern: "Input must match the pattern ${1}"
 };
 
 function findAncestor(el, cls) {
@@ -44,7 +45,7 @@ var defaultConfig = {
 
 var PRISTINE_ERROR = 'pristine-error';
 var SELECTOR = "input:not([type^=hidden]):not([type^=submit]), select, textarea";
-var ALLOWED_ATTRIBUTES = ["required", "min", "max", 'minlength', 'maxlength'];
+var ALLOWED_ATTRIBUTES = ["required", "min", "max", 'minlength', 'maxlength', 'pattern'];
 
 var validators = {};
 
@@ -62,26 +63,28 @@ _('required', { fn: function fn(val) {
         return this.type === 'radio' || this.type === 'checkbox' ? groupedElemCount(this) : val !== undefined && val !== '';
     }, priority: 99, halt: true });
 _('email', { fn: function fn(val) {
-        return (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)
-        );
+        return !val || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
     } });
 _('number', { fn: function fn(val) {
-        return !isNaN(parseFloat(val));
+        return !val || !isNaN(parseFloat(val));
+    }, priority: 2 });
+_('integer', { fn: function fn(val) {
+        return val && /^\d+$/.test(val);
     } });
 _('minlength', { fn: function fn(val, length) {
-        return val && val.length >= parseInt(length);
+        return !val || val.length >= parseInt(length);
     } });
 _('maxlength', { fn: function fn(val, length) {
-        return val && val.length <= parseInt(length);
+        return !val || val.length <= parseInt(length);
     } });
 _('min', { fn: function fn(val, limit) {
-        return this.type === 'checkbox' ? groupedElemCount(this) >= parseInt(limit) : parseFloat(val) >= parseFloat(limit);
+        return !val || (this.type === 'checkbox' ? groupedElemCount(this) >= parseInt(limit) : parseFloat(val) >= parseFloat(limit));
     } });
 _('max', { fn: function fn(val, limit) {
-        return this.type === 'checkbox' ? groupedElemCount(this) <= parseInt(limit) : parseFloat(val) <= parseFloat(limit);
+        return !val || (this.type === 'checkbox' ? groupedElemCount(this) <= parseInt(limit) : parseFloat(val) <= parseFloat(limit));
     } });
 _('pattern', { fn: function fn(val, pattern) {
-        var m = pattern.match(new RegExp('^/(.*?)/([gimy]*)$'));return new RegExp(m[1], m[2]).test(val);
+        var m = pattern.match(new RegExp('^/(.*?)/([gimy]*)$'));return !val || new RegExp(m[1], m[2]).test(val);
     } });
 
 function Pristine(form, config, live) {
@@ -183,7 +186,6 @@ function Pristine(form, config, live) {
         if (typeof elemOrName === 'string') {
             _(elemOrName, { fn: fn, msg: msg, priority: priority, halt: halt });
         } else if (elemOrName instanceof HTMLElement) {
-            //TODO check if pristine field
             elemOrName.pristine.validators.push({ fn: fn, msg: msg, priority: priority, halt: halt });
             elemOrName.pristine.validators.sort(function (a, b) {
                 return b.priority - a.priority;
@@ -191,16 +193,43 @@ function Pristine(form, config, live) {
         }
     };
 
-    function _showError(field) {
-        var ret = _removeError(field);
-        var errorClassElement = ret[0],
-            errorTextParent = ret[1];
-        errorClassElement && errorClassElement.classList.add(self.config.errorClass);
+    function _getErrorElements(field) {
+        if (field.errorElements) {
+            return field.errorElements;
+        }
+        var errorClassElement = findAncestor(field.input, self.config.classTo);
+        var errorTextParent = null,
+            errorTextElement = null;
+        if (self.config.classTo === self.config.errorTextParent) {
+            errorTextParent = errorClassElement;
+        } else {
+            errorTextParent = errorClassElement.querySelector(self.errorTextParent);
+        }
+        if (errorTextParent) {
+            errorTextElement = errorTextParent.querySelector('.' + PRISTINE_ERROR);
+            if (!errorTextElement) {
+                errorTextElement = document.createElement(self.config.errorTextTag);
+                errorTextElement.className = PRISTINE_ERROR + ' ' + self.config.errorTextClass;
+                errorTextParent.appendChild(errorTextElement);
+                errorTextElement.pristineDisplay = errorTextElement.style.display;
+            }
+        }
+        return field.errorElements = [errorClassElement, errorTextElement];
+    }
 
-        var elem = document.createElement(self.config.errorTextTag);
-        elem.className = PRISTINE_ERROR + ' ' + self.config.errorTextClass;
-        elem.innerHTML = field.errors.join('<br/>');
-        errorTextParent && errorTextParent.appendChild(elem);
+    function _showError(field) {
+        var errorElements = _getErrorElements(field);
+        var errorClassElement = errorElements[0],
+            errorTextElement = errorElements[1];
+
+        if (errorClassElement) {
+            errorClassElement.classList.remove(self.config.successClass);
+            errorClassElement.classList.add(self.config.errorClass);
+        }
+        if (errorTextElement) {
+            errorTextElement.innerHTML = field.errors.join('<br/>');
+            errorTextElement.style.display = errorTextElement.pristineDisplay || '';
+        }
     }
 
     self.addError = function (input, error) {
@@ -210,15 +239,19 @@ function Pristine(form, config, live) {
     };
 
     function _removeError(field) {
-        var errorClassElement = findAncestor(field.input, self.config.classTo);
-        errorClassElement && errorClassElement.classList.remove(self.config.errorClass, self.config.successClass);
-
-        var errorTextParent = findAncestor(field.input, self.config.errorTextParent);
-        var existing = errorTextParent ? errorTextParent.querySelector('.' + PRISTINE_ERROR) : null;
-        if (existing) {
-            existing.parentNode.removeChild(existing);
+        var errorElements = _getErrorElements(field);
+        var errorClassElement = errorElements[0],
+            errorTextElement = errorElements[1];
+        if (errorClassElement) {
+            // IE > 9 doesn't support multiple class removal
+            errorClassElement.classList.remove(self.config.errorClass);
+            errorClassElement.classList.remove(self.config.successClass);
         }
-        return [errorClassElement, errorTextParent];
+        if (errorTextElement) {
+            errorTextElement.innerHTML = '';
+            errorTextElement.style.display = 'none';
+        }
+        return errorElements;
     }
 
     function _showSuccess(field) {
@@ -227,11 +260,15 @@ function Pristine(form, config, live) {
     }
 
     self.reset = function () {
+        for (var i in self.fields) {
+            self.fields[i].errorElements = null;
+        }
         Array.from(self.form.querySelectorAll('.' + PRISTINE_ERROR)).map(function (elem) {
             elem.parentNode.removeChild(elem);
         });
         Array.from(self.form.querySelectorAll('.' + self.config.classTo)).map(function (elem) {
-            elem.classList.remove(self.config.successClass, self.config.errorClass);
+            elem.classList.remove(self.config.successClass);
+            elem.classList.remove(self.config.errorClass);
         });
     };
 

@@ -8,4 +8,5 @@ export const lang = {
     minlength: "This fields length must be > ${1}",
     min: "Minimum value for this field is ${1}",
     max: "Maximum value for this field is ${1}",
+    pattern: "Input must match the pattern ${1}",
 };

@@ -12,7 +12,7 @@ let defaultConfig = {
 
 const PRISTINE_ERROR = 'pristine-error';
 const SELECTOR = "input:not([type^=hidden]):not([type^=submit]), select, textarea";
-const ALLOWED_ATTRIBUTES = ["required", "min", "max", 'minlength', 'maxlength'];
+const ALLOWED_ATTRIBUTES = ["required", "min", "max", 'minlength', 'maxlength', 'pattern'];
 
 const validators = {};
 
@@ -27,13 +27,14 @@ const _ = function (name, validator) {
 
 _('text', { fn: (val) => true, priority: 0});
 _('required', { fn: function(val){ return (this.type === 'radio' || this.type === 'checkbox') ? groupedElemCount(this) : val !== undefined && val !== ''}, priority: 99, halt: true});
-_('email', { fn: (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)});
-_('number', { fn: (val) => !isNaN(parseFloat(val)) });
-_('minlength', { fn: (val, length) => val && val.length >= parseInt(length) });
-_('maxlength', { fn: (val, length) => val && val.length <= parseInt(length) });
-_('min', { fn: function(val, limit){ return this.type === 'checkbox' ? groupedElemCount(this) >= parseInt(limit) : parseFloat(val) >= parseFloat(limit); } });
-_('max', { fn: function(val, limit){ return this.type === 'checkbox' ? groupedElemCount(this) <= parseInt(limit) : parseFloat(val) <= parseFloat(limit); } });
-_('pattern', { fn: (val, pattern) => {let m = pattern.match(new RegExp('^/(.*?)/([gimy]*)$')); return (new RegExp(m[1], m[2])).test(val);} });
+_('email', { fn: (val) => !val || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)});
+_('number', { fn: (val) => !val || !isNaN(parseFloat(val)), priority: 2 });
+_('integer', { fn: (val) => val && /^\d+$/.test(val) });
+_('minlength', { fn: (val, length) => !val || val.length >= parseInt(length) });
+_('maxlength', { fn: (val, length) => !val || val.length <= parseInt(length) });
+_('min', { fn: function(val, limit){ return !val || (this.type === 'checkbox' ? groupedElemCount(this) >= parseInt(limit) : parseFloat(val) >= parseFloat(limit)); } });
+_('max', { fn: function(val, limit){ return !val || (this.type === 'checkbox' ? groupedElemCount(this) <= parseInt(limit) : parseFloat(val) <= parseFloat(limit)); } });
+_('pattern', { fn: (val, pattern) => { let m = pattern.match(new RegExp('^/(.*?)/([gimy]*)$')); return !val || (new RegExp(m[1], m[2])).test(val);} });
 
 
 export default function Pristine(form, config, live){
@@ -135,18 +136,43 @@ export default function Pristine(form, config, live){
             elemOrName.pristine.validators.push({fn, msg, priority, halt});
             elemOrName.pristine.validators.sort( (a, b) => b.priority - a.priority);
         }
-
     };
 
-    function _showError(field){
-        let ret = _removeError(field);
-        let errorClassElement = ret[0], errorTextParent = ret[1];
-        errorClassElement && errorClassElement.classList.add(self.config.errorClass);
+    function _getErrorElements(field) {
+        if (field.errorElements){
+            return field.errorElements;
+        }
+        let errorClassElement = findAncestor(field.input, self.config.classTo);
+        let errorTextParent = null, errorTextElement = null;
+        if (self.config.classTo === self.config.errorTextParent){
+            errorTextParent = errorClassElement;
+        } else {
+            errorTextParent = errorClassElement.querySelector(self.errorTextParent);
+        }
+        if (errorTextParent){
+            errorTextElement = errorTextParent.querySelector('.' + PRISTINE_ERROR);
+            if (!errorTextElement){
+                errorTextElement = document.createElement(self.config.errorTextTag);
+                errorTextElement.className = PRISTINE_ERROR + ' ' + self.config.errorTextClass;
+                errorTextParent.appendChild(errorTextElement);
+                errorTextElement.pristineDisplay = errorTextElement.style.display;
+            }
+        }
+        return field.errorElements = [errorClassElement, errorTextElement]
+    }
 
-        let elem = document.createElement(self.config.errorTextTag);
-        elem.className = PRISTINE_ERROR + ' ' + self.config.errorTextClass;
-        elem.innerHTML = field.errors.join('<br/>');
-        errorTextParent && errorTextParent.appendChild(elem);
+    function _showError(field){
+        let errorElements = _getErrorElements(field);
+        let errorClassElement = errorElements[0], errorTextElement = errorElements[1];
+
+        if(errorClassElement){
+            errorClassElement.classList.remove(self.config.successClass);
+            errorClassElement.classList.add(self.config.errorClass);
+        }
+        if (errorTextElement){
+            errorTextElement.innerHTML = field.errors.join('<br/>');
+            errorTextElement.style.display = errorTextElement.pristineDisplay || '';
+        }
     }
 
     self.addError = function(input, error) {
@@ -156,15 +182,18 @@ export default function Pristine(form, config, live){
     };
 
     function _removeError(field){
-        let errorClassElement = findAncestor(field.input, self.config.classTo);
-        errorClassElement && errorClassElement.classList.remove(self.config.errorClass, self.config.successClass);
-
-        let errorTextParent = findAncestor(field.input, self.config.errorTextParent);
-        var existing = errorTextParent ? errorTextParent.querySelector('.' + PRISTINE_ERROR) : null;
-        if (existing){
-            existing.parentNode.removeChild(existing);
+        let errorElements = _getErrorElements(field);
+        let errorClassElement = errorElements[0], errorTextElement = errorElements[1];
+        if (errorClassElement){
+            // IE > 9 doesn't support multiple class removal
+            errorClassElement.classList.remove(self.config.errorClass);
+            errorClassElement.classList.remove(self.config.successClass);
         }
-        return [errorClassElement, errorTextParent]
+        if (errorTextElement){
+            errorTextElement.innerHTML = '';
+            errorTextElement.style.display = 'none';
+        }
+        return errorElements;
     }
 
     function _showSuccess(field){
@@ -173,11 +202,15 @@ export default function Pristine(form, config, live){
     }
 
     self.reset = function () {
+        for(var i in self.fields){
+            self.fields[i].errorElements = null;
+        }
         Array.from(self.form.querySelectorAll('.' + PRISTINE_ERROR)).map(function (elem) {
             elem.parentNode.removeChild(elem);
         });
         Array.from(self.form.querySelectorAll('.' + self.config.classTo)).map(function (elem) {
-            elem.classList.remove(self.config.successClass, self.config.errorClass);
+            elem.classList.remove(self.config.successClass);
+            elem.classList.remove(self.config.errorClass);
         });
 
     };
