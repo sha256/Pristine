@@ -6,6 +6,8 @@
 
 ## [Demo](demo/)
 
+**This documentation is being updated and currently incomplete**
+
 ## Usage
 
 Include the javascript file in your html head or just before the closing body tag
@@ -40,13 +42,6 @@ window.onload = function () {
 It automatically validates `required, min, max, minlength, maxlength` attributes and the value of type attributes
  like `email, number` and more..
  
- 
-## Install
-
-```sh
-$ npm install pristinejs --save
-```
-
 
 `Pristine` takes `3` parameters
 
@@ -70,6 +65,13 @@ let defaultConfig = {
 ```
 
 - **live** A boolean value indicating whether pristine should validate as you type, default is `true`
+
+
+## Install
+
+```sh
+$ npm install pristinejs --save
+```
 
 
 ## Custom Validator
@@ -109,6 +111,20 @@ Now you can assign it to your inputs like this
 ```html
 <input type="text" class="form-control" data-pristine-my-range="10,30" />
 ```
+## Built-in validators
+
+| Name | Usage  | Description|
+| ---  | ----   |   -----    |
+| `required` | `required` or `data-pristine-required` | Validates required fields|
+| `email` | `type="email"` or `data-pristine-type="email"`| Validates email|
+| `number`| `type="number"` or `data-pristine-type="number"`| |
+| `integer`| `data-pristine-type="integer"`| |
+| `minlength` | `minlength="10"` or `data-pristine-minlength="10"` | |
+| `maxlength` | `maxlength="10"` or `data-pristine-maxlength="10"` | |
+| `min` | `min="20"` or `data-pristine-min="20"` | |
+| `max` | `max="100"` or `data-pristine-max="100"` | |
+| `pattern` | `pattern="/[a-z]+$/i"` or `data-pristine-pattern="/[a-z]+$/i"` ||
+
 
 > The goal of this library is not to provide every possible type of validation and thus becoming a bloat. 
 > The goal is to provide most common types of validations and a neat way to add custom validators.

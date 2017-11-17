@@ -52,3 +52,15 @@ label {
 .pristine-error {
     display: table;
 }
+
+.codepen-url {
+    margin-bottom: 30px;
+    display: block;
+    width: 100%;
+}
+
+.codepen-url span {
+    position: relative;
+    top: -5px;
+    left: 0;
+}
