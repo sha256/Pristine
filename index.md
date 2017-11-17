@@ -68,7 +68,7 @@ let defaultConfig = {
 };
 ```
 
-- **online** A boolean value indicating whether pristine should validate as you type, default is `true`
+- **live** A boolean value indicating whether pristine should validate as you type, default is `true`
 
 
 ## Custom Validator

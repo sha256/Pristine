@@ -44,3 +44,11 @@ label {
 .form-group .text-help {
     color: #dc1d34;
 }
+
+.inline-label label{
+    display: inline;
+}
+
+.pristine-error {
+    display: table;
+}

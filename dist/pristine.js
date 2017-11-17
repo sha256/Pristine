@@ -13,56 +13,9 @@ var lang = {
     maxlength: "This fields length must be < ${1}",
     minlength: "This fields length must be > ${1}",
     min: "Minimum value for this field is ${1}",
-    max: "Maximum value for this field is ${1}"
+    max: "Maximum value for this field is ${1}",
+    pattern: "Input must match the pattern ${1}"
 };
-
-var defaultConfig = {
-    classTo: 'form-group',
-    errorClass: 'has-danger',
-    successClass: 'has-success',
-    errorTextParent: 'form-group',
-    errorTextTag: 'div',
-    errorTextClass: 'text-help'
-};
-
-var PRISTINE_ERROR = 'pristine-error';
-var SELECTOR = "input:not([type^=hidden]):not([type^=submit]), select, textarea";
-var ALLOWED_ATTRIBUTES = ["required", "min", "max", 'minlength', 'maxlength'];
-
-var validators = {};
-
-var _ = function _(name, validator) {
-    validator.name = name;
-    if (!validator.msg) validator.msg = lang[name];
-    if (validator.priority === undefined) validator.priority = 1;
-    validators[name] = validator;
-};
-
-_('text', { fn: function fn(val) {
-        return true;
-    }, priority: 0 });
-_('required', { fn: function fn(val) {
-        return val !== '';
-    }, priority: 99, halt: true });
-_('email', { fn: function fn(val) {
-        return (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)
-        );
-    }, priority: 1 });
-_('number', { fn: function fn(val) {
-        return parseFloat(val);
-    }, priority: 1 });
-_('minlength', { fn: function fn(val, length) {
-        return console.log(val, length) || val && val.length >= parseInt(length);
-    }, priority: 1 });
-_('maxlength', { fn: function fn(val, length) {
-        return val && val.length <= parseInt(length);
-    }, priority: 1 });
-_('min', { fn: function fn(val, limit) {
-        return parseFloat(val) >= parseFloat(limit);
-    }, priority: 1 });
-_('max', { fn: function fn(val, limit) {
-        return parseFloat(val) <= parseFloat(limit);
-    }, priority: 1 });
 
 function findAncestor(el, cls) {
     while ((el = el.parentElement) && !el.classList.contains(cls)) {}
@@ -77,48 +30,104 @@ function tmpl(o) {
     });
 }
 
-function Pristine(form, config, online) {
+function groupedElemCount(input) {
+    return input.pristine.self.form.querySelectorAll('input[name="' + input.getAttribute('name') + '"]:checked').length;
+}
+
+var defaultConfig = {
+    classTo: 'form-group',
+    errorClass: 'has-danger',
+    successClass: 'has-success',
+    errorTextParent: 'form-group',
+    errorTextTag: 'div',
+    errorTextClass: 'text-help'
+};
+
+var PRISTINE_ERROR = 'pristine-error';
+var SELECTOR = "input:not([type^=hidden]):not([type^=submit]), select, textarea";
+var ALLOWED_ATTRIBUTES = ["required", "min", "max", 'minlength', 'maxlength', 'pattern'];
+
+var validators = {};
+
+var _ = function _(name, validator) {
+    validator.name = name;
+    if (!validator.msg) validator.msg = lang[name];
+    if (validator.priority === undefined) validator.priority = 1;
+    validators[name] = validator;
+};
+
+_('text', { fn: function fn(val) {
+        return true;
+    }, priority: 0 });
+_('required', { fn: function fn(val) {
+        return this.type === 'radio' || this.type === 'checkbox' ? groupedElemCount(this) : val !== undefined && val !== '';
+    }, priority: 99, halt: true });
+_('email', { fn: function fn(val) {
+        return !val || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+    } });
+_('number', { fn: function fn(val) {
+        return !val || !isNaN(parseFloat(val));
+    }, priority: 2 });
+_('integer', { fn: function fn(val) {
+        return val && /^\d+$/.test(val);
+    } });
+_('minlength', { fn: function fn(val, length) {
+        return !val || val.length >= parseInt(length);
+    } });
+_('maxlength', { fn: function fn(val, length) {
+        return !val || val.length <= parseInt(length);
+    } });
+_('min', { fn: function fn(val, limit) {
+        return !val || (this.type === 'checkbox' ? groupedElemCount(this) >= parseInt(limit) : parseFloat(val) >= parseFloat(limit));
+    } });
+_('max', { fn: function fn(val, limit) {
+        return !val || (this.type === 'checkbox' ? groupedElemCount(this) <= parseInt(limit) : parseFloat(val) <= parseFloat(limit));
+    } });
+_('pattern', { fn: function fn(val, pattern) {
+        var m = pattern.match(new RegExp('^/(.*?)/([gimy]*)$'));return !val || new RegExp(m[1], m[2]).test(val);
+    } });
+
+function Pristine(form, config, live) {
 
     var self = this;
 
-    init(form, config, online);
+    init(form, config, live);
 
-    function init(form, config, online) {
+    function init(form, config, live) {
         self.form = form;
         self.config = config || defaultConfig;
-        self.online = !(online === false);
+        self.live = !(live === false);
         self.fields = Array.from(form.querySelectorAll(SELECTOR)).map(function (input) {
 
             var fns = [];
             var params = {};
-
-            ALLOWED_ATTRIBUTES.forEach(function (item) {
-                var val = input.getAttribute(item);
-                if (val !== null) {
-                    _addValidatorToField(fns, params, item, val);
-                }
-            });
+            var messages = {};
 
             [].forEach.call(input.attributes, function (attr) {
                 if (/^data-pristine-/.test(attr.name)) {
                     var name = attr.name.substr(14);
+                    if (name.endsWith('-message')) {
+                        messages[name.slice(0, name.length - 8)] = attr.value;
+                        return;
+                    }
                     if (name === 'type') name = attr.value;
                     _addValidatorToField(fns, params, name, attr.value);
+                } else if (~ALLOWED_ATTRIBUTES.indexOf(attr.name)) {
+                    _addValidatorToField(fns, params, attr.name, attr.value);
+                } else if (attr.name === 'type') {
+                    _addValidatorToField(fns, params, attr.value);
                 }
             });
-
-            _addValidatorToField(fns, params, input.getAttribute('type'));
 
             fns.sort(function (a, b) {
                 return b.priority - a.priority;
             });
 
-            self.online && input.addEventListener(!~['radio', 'checkbox'].indexOf(input.getAttribute('type')) ? 'input' : 'change', function (e) {
+            self.live && input.addEventListener(!~['radio', 'checkbox'].indexOf(input.getAttribute('type')) ? 'input' : 'change', function (e) {
                 self.validate(e.target);
             }.bind(self));
 
-            input.pristine = { input: input, validators: fns, params: params };
-            return input.pristine;
+            return input.pristine = { input: input, validators: fns, params: params, messages: messages, self: self };
         }.bind(self));
     }
 
@@ -143,18 +152,18 @@ function Pristine(form, config, online) {
                 !silent && _showSuccess(field);
             } else {
                 valid = false;
-                !silent && _showError(field, field.messages);
+                !silent && _showError(field);
             }
         }
         return valid;
     };
 
-    self.getErrorMessages = function (input) {
-        return input.length ? input[0].pristine.messages : input.pristine.messages;
+    self.getErrors = function (input) {
+        return input.length ? input[0].pristine.errors : input.pristine.errors;
     };
 
     function _validateField(field) {
-        var messages = [];
+        var errors = [];
         var valid = true;
         for (var i in field.validators) {
             var validator = field.validators[i];
@@ -162,13 +171,14 @@ function Pristine(form, config, online) {
             params[0] = field.input.value;
             if (!validator.fn.apply(field.input, params)) {
                 valid = false;
-                messages.push(tmpl.apply(validator.msg, params));
+                var error = field.messages[validator.name] || validator.msg;
+                errors.push(tmpl.apply(error, params));
                 if (validator.halt === true) {
                     break;
                 }
             }
         }
-        field.messages = messages;
+        field.errors = errors;
         return valid;
     }
 
@@ -176,7 +186,6 @@ function Pristine(form, config, online) {
         if (typeof elemOrName === 'string') {
             _(elemOrName, { fn: fn, msg: msg, priority: priority, halt: halt });
         } else if (elemOrName instanceof HTMLElement) {
-            //TODO check if pristine field
             elemOrName.pristine.validators.push({ fn: fn, msg: msg, priority: priority, halt: halt });
             elemOrName.pristine.validators.sort(function (a, b) {
                 return b.priority - a.priority;
@@ -184,28 +193,65 @@ function Pristine(form, config, online) {
         }
     };
 
-    function _showError(field, messages) {
-        var ret = _removeError(field);
-        var errorClassElement = ret[0],
-            errorTextParent = ret[1];
-        errorClassElement && errorClassElement.classList.add(self.config.errorClass);
-
-        var elem = document.createElement(self.config.errorTextTag);
-        elem.className = PRISTINE_ERROR + ' ' + self.config.errorTextClass;
-        elem.innerHTML = messages.join('<br/>');
-        errorTextParent && errorTextParent.appendChild(elem);
+    function _getErrorElements(field) {
+        if (field.errorElements) {
+            return field.errorElements;
+        }
+        var errorClassElement = findAncestor(field.input, self.config.classTo);
+        var errorTextParent = null,
+            errorTextElement = null;
+        if (self.config.classTo === self.config.errorTextParent) {
+            errorTextParent = errorClassElement;
+        } else {
+            errorTextParent = errorClassElement.querySelector(self.errorTextParent);
+        }
+        if (errorTextParent) {
+            errorTextElement = errorTextParent.querySelector('.' + PRISTINE_ERROR);
+            if (!errorTextElement) {
+                errorTextElement = document.createElement(self.config.errorTextTag);
+                errorTextElement.className = PRISTINE_ERROR + ' ' + self.config.errorTextClass;
+                errorTextParent.appendChild(errorTextElement);
+                errorTextElement.pristineDisplay = errorTextElement.style.display;
+            }
+        }
+        return field.errorElements = [errorClassElement, errorTextElement];
     }
 
-    function _removeError(field) {
-        var errorClassElement = findAncestor(field.input, self.config.classTo);
-        errorClassElement && errorClassElement.classList.remove(self.config.errorClass, self.config.successClass);
+    function _showError(field) {
+        var errorElements = _getErrorElements(field);
+        var errorClassElement = errorElements[0],
+            errorTextElement = errorElements[1];
 
-        var errorTextParent = findAncestor(field.input, self.config.errorTextParent);
-        var existing = errorTextParent ? errorTextParent.querySelector('.' + PRISTINE_ERROR) : null;
-        if (existing) {
-            existing.parentNode.removeChild(existing);
+        if (errorClassElement) {
+            errorClassElement.classList.remove(self.config.successClass);
+            errorClassElement.classList.add(self.config.errorClass);
         }
-        return [errorClassElement, errorTextParent];
+        if (errorTextElement) {
+            errorTextElement.innerHTML = field.errors.join('<br/>');
+            errorTextElement.style.display = errorTextElement.pristineDisplay || '';
+        }
+    }
+
+    self.addError = function (input, error) {
+        input = input.length ? input[0] : input;
+        input.pristine.errors.push(error);
+        _showError(input.pristine);
+    };
+
+    function _removeError(field) {
+        var errorElements = _getErrorElements(field);
+        var errorClassElement = errorElements[0],
+            errorTextElement = errorElements[1];
+        if (errorClassElement) {
+            // IE > 9 doesn't support multiple class removal
+            errorClassElement.classList.remove(self.config.errorClass);
+            errorClassElement.classList.remove(self.config.successClass);
+        }
+        if (errorTextElement) {
+            errorTextElement.innerHTML = '';
+            errorTextElement.style.display = 'none';
+        }
+        return errorElements;
     }
 
     function _showSuccess(field) {
@@ -214,11 +260,15 @@ function Pristine(form, config, online) {
     }
 
     self.reset = function () {
+        for (var i in self.fields) {
+            self.fields[i].errorElements = null;
+        }
         Array.from(self.form.querySelectorAll('.' + PRISTINE_ERROR)).map(function (elem) {
             elem.parentNode.removeChild(elem);
         });
         Array.from(self.form.querySelectorAll('.' + self.config.classTo)).map(function (elem) {
-            elem.classList.remove(self.config.successClass, self.config.errorClass);
+            elem.classList.remove(self.config.successClass);
+            elem.classList.remove(self.config.errorClass);
         });
     };
 
