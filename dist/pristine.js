@@ -16,6 +16,23 @@ var lang = {
     max: "Maximum value for this field is ${1}"
 };
 
+function findAncestor(el, cls) {
+    while ((el = el.parentElement) && !el.classList.contains(cls)) {}
+    return el;
+}
+
+function tmpl(o) {
+    var _arguments = arguments;
+
+    return this.replace(/\${([^{}]*)}/g, function (a, b) {
+        return _arguments[b];
+    });
+}
+
+function groupedElemCount(input) {
+    return input.pristine.self.form.querySelectorAll('input[name="' + input.getAttribute('name') + '"]:checked').length;
+}
+
 var defaultConfig = {
     classTo: 'form-group',
     errorClass: 'has-danger',
@@ -42,83 +59,72 @@ _('text', { fn: function fn(val) {
         return true;
     }, priority: 0 });
 _('required', { fn: function fn(val) {
-        return val !== '';
+        return this.type === 'radio' || this.type === 'checkbox' ? groupedElemCount(this) : val !== undefined && val !== '';
     }, priority: 99, halt: true });
 _('email', { fn: function fn(val) {
         return (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)
         );
-    }, priority: 1 });
+    } });
 _('number', { fn: function fn(val) {
-        return parseFloat(val);
-    }, priority: 1 });
+        return !isNaN(parseFloat(val));
+    } });
 _('minlength', { fn: function fn(val, length) {
-        return console.log(val, length) || val && val.length >= parseInt(length);
-    }, priority: 1 });
+        return val && val.length >= parseInt(length);
+    } });
 _('maxlength', { fn: function fn(val, length) {
         return val && val.length <= parseInt(length);
-    }, priority: 1 });
+    } });
 _('min', { fn: function fn(val, limit) {
-        return parseFloat(val) >= parseFloat(limit);
-    }, priority: 1 });
+        return this.type === 'checkbox' ? groupedElemCount(this) >= parseInt(limit) : parseFloat(val) >= parseFloat(limit);
+    } });
 _('max', { fn: function fn(val, limit) {
-        return parseFloat(val) <= parseFloat(limit);
-    }, priority: 1 });
+        return this.type === 'checkbox' ? groupedElemCount(this) <= parseInt(limit) : parseFloat(val) <= parseFloat(limit);
+    } });
+_('pattern', { fn: function fn(val, pattern) {
+        var m = pattern.match(new RegExp('^/(.*?)/([gimy]*)$'));return new RegExp(m[1], m[2]).test(val);
+    } });
 
-function findAncestor(el, cls) {
-    while ((el = el.parentElement) && !el.classList.contains(cls)) {}
-    return el;
-}
-
-function tmpl(o) {
-    var _arguments = arguments;
-
-    return this.replace(/\${([^{}]*)}/g, function (a, b) {
-        return _arguments[b];
-    });
-}
-
-function Pristine(form, config, online) {
+function Pristine(form, config, live) {
 
     var self = this;
 
-    init(form, config, online);
+    init(form, config, live);
 
-    function init(form, config, online) {
+    function init(form, config, live) {
         self.form = form;
         self.config = config || defaultConfig;
-        self.online = !(online === false);
+        self.live = !(live === false);
         self.fields = Array.from(form.querySelectorAll(SELECTOR)).map(function (input) {
 
             var fns = [];
             var params = {};
-
-            ALLOWED_ATTRIBUTES.forEach(function (item) {
-                var val = input.getAttribute(item);
-                if (val !== null) {
-                    _addValidatorToField(fns, params, item, val);
-                }
-            });
+            var messages = {};
 
             [].forEach.call(input.attributes, function (attr) {
                 if (/^data-pristine-/.test(attr.name)) {
                     var name = attr.name.substr(14);
+                    if (name.endsWith('-message')) {
+                        messages[name.slice(0, name.length - 8)] = attr.value;
+                        return;
+                    }
                     if (name === 'type') name = attr.value;
                     _addValidatorToField(fns, params, name, attr.value);
+                } else if (~ALLOWED_ATTRIBUTES.indexOf(attr.name)) {
+                    _addValidatorToField(fns, params, attr.name, attr.value);
+                } else if (attr.name === 'type') {
+                    _addValidatorToField(fns, params, attr.value);
                 }
             });
-
-            _addValidatorToField(fns, params, input.getAttribute('type'));
 
             fns.sort(function (a, b) {
                 return b.priority - a.priority;
             });
 
-            self.online && input.addEventListener(!~['radio', 'checkbox'].indexOf(input.getAttribute('type')) ? 'input' : 'change', function (e) {
+            self.live && input.addEventListener(!~['radio', 'checkbox'].indexOf(input.getAttribute('type')) ? 'input' : 'change', function (e) {
                 self.validate(e.target);
             }.bind(self));
 
-            input.pristine = { input: input, validators: fns, params: params };
-            return input.pristine;
+            return input.pristine = { input: input, validators: fns, params: params, messages: messages, self: self };
         }.bind(self));
     }
 
@@ -143,18 +149,18 @@ function Pristine(form, config, online) {
                 !silent && _showSuccess(field);
             } else {
                 valid = false;
-                !silent && _showError(field, field.messages);
+                !silent && _showError(field);
             }
         }
         return valid;
     };
 
-    self.getErrorMessages = function (input) {
-        return input.length ? input[0].pristine.messages : input.pristine.messages;
+    self.getErrors = function (input) {
+        return input.length ? input[0].pristine.errors : input.pristine.errors;
     };
 
     function _validateField(field) {
-        var messages = [];
+        var errors = [];
         var valid = true;
         for (var i in field.validators) {
             var validator = field.validators[i];
@@ -162,13 +168,14 @@ function Pristine(form, config, online) {
             params[0] = field.input.value;
             if (!validator.fn.apply(field.input, params)) {
                 valid = false;
-                messages.push(tmpl.apply(validator.msg, params));
+                var error = field.messages[validator.name] || validator.msg;
+                errors.push(tmpl.apply(error, params));
                 if (validator.halt === true) {
                     break;
                 }
             }
         }
-        field.messages = messages;
+        field.errors = errors;
         return valid;
     }
 
@@ -184,7 +191,7 @@ function Pristine(form, config, online) {
         }
     };
 
-    function _showError(field, messages) {
+    function _showError(field) {
         var ret = _removeError(field);
         var errorClassElement = ret[0],
             errorTextParent = ret[1];
@@ -192,9 +199,15 @@ function Pristine(form, config, online) {
 
         var elem = document.createElement(self.config.errorTextTag);
         elem.className = PRISTINE_ERROR + ' ' + self.config.errorTextClass;
-        elem.innerHTML = messages.join('<br/>');
+        elem.innerHTML = field.errors.join('<br/>');
         errorTextParent && errorTextParent.appendChild(elem);
     }
+
+    self.addError = function (input, error) {
+        input = input.length ? input[0] : input;
+        input.pristine.errors.push(error);
+        _showError(input.pristine);
+    };
 
     function _removeError(field) {
         var errorClassElement = findAncestor(field.input, self.config.classTo);
