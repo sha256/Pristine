@@ -4,6 +4,7 @@
 
 **~4kb minified, ~2kb gzipped, no dependencies**
 
+## [Demo](demo/)
 
 ## Usage
 
