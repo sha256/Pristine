@@ -1,4 +1,5 @@
 import { lang } from './lang';
+import { tmpl, findAncestor, groupedElemCount } from './utils';
 
 let defaultConfig = {
     classTo: 'form-group',
@@ -24,67 +25,56 @@ const _ = function (name, validator) {
     validators[name] = validator;
 };
 
-_('text', {fn: (val) => true, priority: 0});
-_('required', {fn: (val) => val !== '', priority: 99, halt: true});
-_('email', {fn: (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val), priority: 1});
-_('number', {fn: (val) => parseFloat(val), priority: 1});
-_('minlength', {fn: (val, length) => console.log(val, length) || val && val.length >= parseInt(length), priority: 1});
-_('maxlength', {fn: (val, length) => val && val.length <= parseInt(length), priority: 1});
-_('min', {fn: (val, limit) => parseFloat(val) >= parseFloat(limit), priority: 1});
-_('max', {fn: (val, limit) => parseFloat(val) <= parseFloat(limit), priority: 1});
+_('text', { fn: (val) => true, priority: 0});
+_('required', { fn: function(val){ return (this.type === 'radio' || this.type === 'checkbox') ? groupedElemCount(this) : val !== undefined && val !== ''}, priority: 99, halt: true});
+_('email', { fn: (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)});
+_('number', { fn: (val) => !isNaN(parseFloat(val)) });
+_('minlength', { fn: (val, length) => val && val.length >= parseInt(length) });
+_('maxlength', { fn: (val, length) => val && val.length <= parseInt(length) });
+_('min', { fn: function(val, limit){ return this.type === 'checkbox' ? groupedElemCount(this) >= parseInt(limit) : parseFloat(val) >= parseFloat(limit); } });
+_('max', { fn: function(val, limit){ return this.type === 'checkbox' ? groupedElemCount(this) <= parseInt(limit) : parseFloat(val) <= parseFloat(limit); } });
+_('pattern', { fn: (val, pattern) => {let m = pattern.match(new RegExp('^/(.*?)/([gimy]*)$')); return (new RegExp(m[1], m[2])).test(val);} });
 
 
-function findAncestor (el, cls) {
-    while ((el = el.parentElement) && !el.classList.contains(cls));
-    return el;
-}
-
-function tmpl(o) {
-    return this.replace(/\${([^{}]*)}/g, (a, b) => arguments[b]);
-}
-
-export default function Pristine(form, config, online){
+export default function Pristine(form, config, live){
     
     let self = this;
 
-    init(form, config, online);
+    init(form, config, live);
     
-    function init(form, config, online){
+    function init(form, config, live){
         self.form = form;
         self.config = config || defaultConfig;
-        self.online = !(online === false);
+        self.live = !(live === false);
         self.fields = Array.from(form.querySelectorAll(SELECTOR)).map(function (input) {
 
             let fns = [];
             let params = {};
-
-            ALLOWED_ATTRIBUTES.forEach(function (item) {
-                let val = input.getAttribute(item);
-                if (val !== null){
-                    _addValidatorToField(fns, params, item, val);
-                }
-            });
+            let messages = {};
 
             [].forEach.call(input.attributes, function (attr) {
                 if (/^data-pristine-/.test(attr.name)) {
                     let name = attr.name.substr(14);
+                    if (name.endsWith('-message')){
+                        messages[name.slice(0, name.length-8)] = attr.value;
+                        return;
+                    }
                     if (name === 'type') name = attr.value;
                     _addValidatorToField(fns, params, name, attr.value);
+                } else if (~ALLOWED_ATTRIBUTES.indexOf(attr.name)){
+                    _addValidatorToField(fns, params, attr.name, attr.value);
+                } else if (attr.name === 'type'){
+                    _addValidatorToField(fns, params, attr.value);
                 }
             });
 
-            _addValidatorToField(fns, params, input.getAttribute('type'));
+            fns.sort( (a, b) => b.priority - a.priority);
 
-            fns.sort(function (a, b) {
-               return b.priority - a.priority;
-            });
-
-            self.online && input.addEventListener((!~['radio', 'checkbox'].indexOf(input.getAttribute('type')) ? 'input':'change'), function(e) {
+            self.live && input.addEventListener((!~['radio', 'checkbox'].indexOf(input.getAttribute('type')) ? 'input':'change'), function(e) {
                 self.validate(e.target);
             }.bind(self));
 
-            input.pristine = {input, validators: fns, params};
-            return input.pristine;
+            return input.pristine = {input, validators: fns, params, messages, self};
 
         }.bind(self));
     }
@@ -108,18 +98,18 @@ export default function Pristine(form, config, online){
                 !silent && _showSuccess(field);
             } else {
                 valid = false;
-                !silent && _showError(field, field.messages);
+                !silent && _showError(field);
             }
         }
         return valid;
     };
 
-    self.getErrorMessages = function(input) {
-        return input.length ? input[0].pristine.messages : input.pristine.messages;
+    self.getErrors = function(input) {
+        return input.length ? input[0].pristine.errors : input.pristine.errors;
     };
 
     function _validateField(field){
-        let messages = [];
+        let errors = [];
         let valid = true;
         for(let i in field.validators){
             let validator = field.validators[i];
@@ -127,13 +117,14 @@ export default function Pristine(form, config, online){
             params[0] = field.input.value;
             if (!validator.fn.apply(field.input, params)){
                 valid = false;
-                messages.push(tmpl.apply(validator.msg, params));
+                let error = field.messages[validator.name] || validator.msg;
+                errors.push(tmpl.apply(error, params));
                 if (validator.halt === true){
                     break;
                 }
             }
         }
-        field.messages = messages;
+        field.errors = errors;
         return valid;
     }
 
@@ -141,25 +132,28 @@ export default function Pristine(form, config, online){
         if (typeof elemOrName === 'string'){
             _(elemOrName, {fn, msg, priority, halt});
         } else if (elemOrName instanceof HTMLElement){
-            //TODO check if pristine field
             elemOrName.pristine.validators.push({fn, msg, priority, halt});
-            elemOrName.pristine.validators.sort(function (a, b) {
-               return b.priority - a.priority;
-            });
+            elemOrName.pristine.validators.sort( (a, b) => b.priority - a.priority);
         }
 
     };
 
-    function _showError(field, messages){
+    function _showError(field){
         let ret = _removeError(field);
         let errorClassElement = ret[0], errorTextParent = ret[1];
         errorClassElement && errorClassElement.classList.add(self.config.errorClass);
 
         let elem = document.createElement(self.config.errorTextTag);
         elem.className = PRISTINE_ERROR + ' ' + self.config.errorTextClass;
-        elem.innerHTML = messages.join('<br/>');
+        elem.innerHTML = field.errors.join('<br/>');
         errorTextParent && errorTextParent.appendChild(elem);
     }
+
+    self.addError = function(input, error) {
+        input = input.length ? input[0] : input;
+        input.pristine.errors.push(error);
+        _showError(input.pristine);
+    };
 
     function _removeError(field){
         let errorClassElement = findAncestor(field.input, self.config.classTo);
