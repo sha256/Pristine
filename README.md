@@ -1,10 +1,9 @@
 # Pristine - Vanilla javascript form validation library
 {:.hide}
-{:#xid}
 
 **~4kb minified, ~2kb gzipped, no dependencies**
 
-## [Demo](demo/)
+## [Demo](http://pristine.js.org/demo/)
 
 **This documentation is being updated and currently incomplete**
 

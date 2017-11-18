@@ -44,6 +44,9 @@ export default function Pristine(form, config, live){
     init(form, config, live);
     
     function init(form, config, live){
+
+        form.setAttribute("novalidate", "true");
+
         self.form = form;
         self.config = config || defaultConfig;
         self.live = !(live === false);
@@ -80,6 +83,24 @@ export default function Pristine(form, config, live){
         }.bind(self));
     }
 
+    function _addValidatorToField(fns, params, name, value) {
+        let validator = validators[name];
+        if (validator) {
+            fns.push(validator);
+            if (value) {
+                let valueParams = value.split(',');
+                valueParams.unshift(null); // placeholder for input's value
+                params[name] = valueParams;
+            }
+        }
+    }
+
+    /***
+     * Checks whether the form/input elements are valid
+     * @param input => input element(s) or a jquery selector, null for full form validation
+     * @param silent => do not show error messages, just return true/false
+     * @returns {boolean} return true when valid false otherwise
+     */
     self.validate = function(input, silent){
         silent = (input && silent === true) || input === true;
         let fields = self.fields;
@@ -105,10 +126,28 @@ export default function Pristine(form, config, live){
         return valid;
     };
 
+    /***
+     * Get errors of a specific field or the whole form
+     * @param input
+     * @returns {Array|*}
+     */
     self.getErrors = function(input) {
+        if (!input){
+            return self.fields.reduce(function (full, ob) {
+                full[ob.input] = ob.errors;
+                return full;
+            }, {});
+        }
         return input.length ? input[0].pristine.errors : input.pristine.errors;
     };
 
+    /***
+     * Validates a single field, all validator functions are called and error messages are generated
+     * when a validator fails
+     * @param field
+     * @returns {boolean}
+     * @private
+     */
     function _validateField(field){
         let errors = [];
         let valid = true;
@@ -129,6 +168,16 @@ export default function Pristine(form, config, live){
         return valid;
     }
 
+    /***
+     *
+     * @param elemOrName => The dom element when validator is applied on a specific field. A string when it's
+     * a global validator
+     * @param fn => validator function
+     * @param msg => message to show when validation fails. Supports templating. ${0} for the input's value, ${1} and
+     * so on are for the attribute values
+     * @param priority => priority of the validator function, higher valued function gets called first.
+     * @param halt => whether validation should stop for this field after current validation function
+     */
     self.addValidator = function(elemOrName, fn, msg, priority, halt){
         if (typeof elemOrName === 'string'){
             _(elemOrName, {fn, msg, priority, halt});
@@ -138,6 +187,13 @@ export default function Pristine(form, config, live){
         }
     };
 
+    /***
+     * An utility function that returns a 2-element array, first one is the element where error/success class is
+     * applied. 2nd one is the element where error message is displayed. 2nd element is created if doesn't exist and cached.
+     * @param field
+     * @returns {*}
+     * @private
+     */
     function _getErrorElements(field) {
         if (field.errorElements){
             return field.errorElements;
@@ -175,6 +231,11 @@ export default function Pristine(form, config, live){
         }
     }
 
+    /***
+     * Adds error to a specific field
+     * @param input
+     * @param error
+     */
     self.addError = function(input, error) {
         input = input.length ? input[0] : input;
         input.pristine.errors.push(error);
@@ -201,6 +262,9 @@ export default function Pristine(form, config, live){
         errorClassElement && errorClassElement.classList.add(self.config.successClass);
     }
 
+    /***
+     * Resets the errors
+     */
     self.reset = function () {
         for(var i in self.fields){
             self.fields[i].errorElements = null;
@@ -215,6 +279,9 @@ export default function Pristine(form, config, live){
 
     };
 
+    /***
+     * Resets the errors and deletes all pristine fields
+     */
     self.destroy = function(){
         self.reset();
         self.fields.forEach(function (field) {
@@ -222,18 +289,6 @@ export default function Pristine(form, config, live){
         });
         self.fields = [];
     };
-
-    function _addValidatorToField(fns, params, name, value) {
-        let validator = validators[name];
-        if (validator) {
-            fns.push(validator);
-            if (value) {
-                let valueParams = value.split(',');
-                valueParams.unshift(null); // placeholder for input's value
-                params[name] = valueParams;
-            }
-        }
-    }
 
     self.setGlobalConfig = function (config) {
         defaultConfig = config;
