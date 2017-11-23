@@ -1,10 +1,9 @@
 # Pristine - Vanilla javascript form validation library
 {:.hide}
-{:#xid}
 
 **~4kb minified, ~2kb gzipped, no dependencies**
 
-## [Demo](demo/)
+## [Demo](http://pristine.js.org/demo/)
 
 **This documentation is being updated and currently incomplete**
 
@@ -48,6 +47,8 @@ It automatically validates `required, min, max, minlength, maxlength` attributes
 - **form** The form element
 
 - **config** An object containing the configuration. Default is bootstrap's configuration which is 
+
+<a id="defaultConfig"></a>
 
 ```javascript
 let defaultConfig = {
@@ -126,5 +127,82 @@ Now you can assign it to your inputs like this
 | `pattern` | `pattern="/[a-z]+$/i"` or `data-pristine-pattern="/[a-z]+$/i"` ||
 
 
+
+## API
+**Pristine(form, config, live)**
+<br/>*Constructor*
+    
+| Parameter | Default  | Required? | Description|
+| ---       | ----     |   -----   | ----       |
+| `form`| - |<center>✔</center> |The form element|
+| `config`| [See above](#defaultConfig)|<center>✕</center>| The config object|
+| `live`  | `true`|<center>✕</center>| Whether pristine should validate as you type|
+
+
+<br/>
+
+**Pristine.validate(inputs, silent)**
+    <br/>*Validate the form or field(s)*
+
+| Parameter | Default  | Required? | Description|
+| ---       | ----     |   ----    | ---        |
+| `inputs`| - | <center>✕</center> | When not given, full form is validated. inputs can be one DOM element or a collection of DOM elements returned by `document.getElement...`, `document.querySelector...` or even `jquery` dom|
+| `silent`  | `false`|<center>✕</center>| Does not show error error messages when `silent` is `true`|
+
+
+<br/>
+
+**Pristine.addValidator(elemOrName, fn, msg, priority, halt)**
+<br/>*Add a custom validator*
+
+| Parameter | Default  | Required? | Description|
+| ---       | ----     |   -----   | ---        |
+| `elemOrName`| - | <center>✔</center> | The dom element when validator is applied on a specific field. A string (the name of the validator) when it's a global validator, you can then use `data-pristine-<NAME>` attribute in form fields to apply this validator|
+| `fn`| - | <center>✔</center> | The function that validates the field. Value of the input field gets passed as the first parameter, and the attribute value (split using comma) as the subsequent parameters. For example, for `<input data-pristine-my-validator="10,20,dhaka" value="myValue"/>`, validator function get called like `fn("myValue", 10, 20, "dhaka")`. Inside the function `this` refers to the input element|
+| `message`| - | <center>✔</center> | The message to show when the validation fails. It supports simple templating. `${0}` for the input's value, `${1}` and so on are for the attribute values. For the above example, `${0}` will get replaced by `myValue`, `${1}` by `10`, `${2}` by `20`, `${3}` by `dhaka`.|
+| `priority`| 1 | <center>✕</center> | Priority of the validator function. The higher the value, the earlier it gets called when there are multiple validators on one field. |
+| `halt`| `false` | <center>✕</center> | Whether to halt validation on the current field after this validation. When `true` after validating the current validator, rest of the validators are ignored on the current field.|
+
+<br/>
+
+**Pristine.getErrors(input)**
+<br/>*Get the errors of the form or a specific field*
+
+| Parameter | Default  | Required? | Description|
+| ---       | ----     |   -----   | ---        |
+| `input`| - | <center>✕</center> | When `input` is given, it returns the errors of that input element, otherwise returns all errors of the form as an object, using input element as key and corresponding errors as value. `validate()` must be called before expecting this method to return correctly.|
+
+
+<br/>
+
+**Pristine.addError(input, error)**
+<br/>*Add A custom error to an input element*
+
+| Parameter | Default  | Required? | Description|
+| ---       | ----     |   -----   | ---        |
+| `input`| - | <center>✕</center> | The input element to which the error should be given|
+| `error`| - | <center>✔</center> | The error string|
+
+<br/>
+
+**Pristine.setGlobalConfig(config)**
+<br/>*Set the global configuration*
+
+| Parameter | Default  | Required? | Description|
+| ---       | ----     |   -----   | ---        |
+| `config`| - | <center>✔</center> | Set the default configuration globally to use in all forms.|
+
+<br/>
+
+**Pristine.reset()**
+<br/>*Reset the errors in the form*
+    
+    
+<br/>
+
+**Pristine.destroy()**
+<br/>*Destroy the pristine object*
+    
+<br/><br/>
 > The goal of this library is not to provide every possible type of validation and thus becoming a bloat. 
 > The goal is to provide most common types of validations and a neat way to add custom validators.
