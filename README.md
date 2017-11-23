@@ -145,7 +145,7 @@ Now you can assign it to your inputs like this
     <br/>*Validate the form or field(s)*
 
 | Parameter | Default  | Required? | Description|
-| ---       | ----     |   ----   |            |
+| ---       | ----     |   ----    | ---        |
 | `inputs`| - | <center>✕</center> | When not given, full form is validated. inputs can be one DOM element or a collection of DOM elements returned by `document.getElement...`, `document.querySelector...` or even `jquery` dom|
 | `silent`  | `false`|<center>✕</center>| Does not show error error messages when `silent` is `true`|
 
@@ -156,7 +156,7 @@ Now you can assign it to your inputs like this
 <br/>*Add a custom validator*
 
 | Parameter | Default  | Required? | Description|
-| ---       | ----     |   -----   |            |
+| ---       | ----     |   -----   | ---        |
 | `elemOrName`| - | <center>✔</center> | The dom element when validator is applied on a specific field. A string (the name of the validator) when it's a global validator, you can then use `data-pristine-<NAME>` attribute in form fields to apply this validator|
 | `fn`| - | <center>✔</center> | The function that validates the field. Value of the input field gets passed as the first parameter, and the attribute value (split using comma) as the subsequent parameters. For example, for `<input data-pristine-my-validator="10,20,dhaka" value="myValue"/>`, validator function get called like `fn("myValue", 10, 20, "dhaka")`. Inside the function `this` refers to the input element|
 | `message`| - | <center>✔</center> | The message to show when the validation fails. It supports simple templating. `${0}` for the input's value, `${1}` and so on are for the attribute values. For the above example, `${0}` will get replaced by `myValue`, `${1}` by `10`, `${2}` by `20`, `${3}` by `dhaka`.|
@@ -169,7 +169,7 @@ Now you can assign it to your inputs like this
 <br/>*Get the errors of the form or a specific field*
 
 | Parameter | Default  | Required? | Description|
-| ---       | ----     |   -----   |            |
+| ---       | ----     |   -----   | ---        |
 | `input`| - | <center>✕</center> | When `input` is given, it returns the errors of that input element, otherwise returns all errors of the form as an object, using input element as key and corresponding errors as value. `validate()` must be called before expecting this method to return correctly.|
 
 
@@ -179,7 +179,7 @@ Now you can assign it to your inputs like this
 <br/>*Add A custom error to an input element*
 
 | Parameter | Default  | Required? | Description|
-| ---       | ----     |   -----   |            |
+| ---       | ----     |   -----   | ---        |
 | `input`| - | <center>✕</center> | The input element to which the error should be given|
 | `error`| - | <center>✔</center> | The error string|
 
@@ -189,7 +189,7 @@ Now you can assign it to your inputs like this
 <br/>*Set the global configuration*
 
 | Parameter | Default  | Required? | Description|
-| ---       | ----     |   -----   |            |
+| ---       | ----     |   -----   | ---        |
 | `config`| - | <center>✔</center> | Set the default configuration globally to use in all forms.|
 
 <br/>
