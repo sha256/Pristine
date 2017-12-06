@@ -186,10 +186,14 @@ function Pristine(form, config, live) {
      */
     self.getErrors = function (input) {
         if (!input) {
-            return self.fields.reduce(function (full, ob) {
-                full[ob.input] = ob.errors;
-                return full;
-            }, {});
+            var erroneousFields = [];
+            for (var i = 0; i < self.fields.length; i++) {
+                var field = self.fields[i];
+                if (field.errors.length) {
+                    erroneousFields.push({ input: field.input, errors: field.errors });
+                }
+            }
+            return erroneousFields;
         }
         return input.length ? input[0].pristine.errors : input.pristine.errors;
     };
