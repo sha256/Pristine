@@ -1,4 +1,4 @@
-export const lang = {
+export const lang = window.pristine_lang || {
     required: "This field is required",
     email: "This field requires a valid e-mail address",
     number: "This field requires a number",
