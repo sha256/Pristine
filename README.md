@@ -112,6 +112,13 @@ Now you can assign it to your inputs like this
 ```html
 <input type="text" class="form-control" data-pristine-my-range="10,30" />
 ```
+
+### Add custom error messages
+```html
+<input required data-pristine-required-message="My custom message"/>
+```
+Add an attribute like `data-pristine-<ValidatorName>-message`with the custom message as value to show custom error messages. You can add custom messages like this for as many validators as you need. Here `ValidatorName` means `required`, `email`, `min`, `max` etc.
+
 ## Built-in validators
 
 | Name | Usage  | Description|
