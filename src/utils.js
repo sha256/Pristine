@@ -12,7 +12,10 @@ export function groupedElemCount(input) {
 }
 
 export function mergeConfig(obj1, obj2) {
-    for (var attr in obj2) {
-        obj1[attr] = obj2[attr];
+    for (let attr in obj2) {
+    		if (!(attr in obj1)) {
+        	obj1[attr] = obj2[attr];
+        }
     }
+    return obj1;
 }

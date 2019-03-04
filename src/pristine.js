@@ -48,7 +48,7 @@ export default function Pristine(form, config, live){
         form.setAttribute("novalidate", "true");
 
         self.form = form;
-        self.config = mergeConfig(config, defaultConfig);
+        self.config = mergeConfig(config || {}, defaultConfig);
         self.live = !(live === false);
         self.fields = Array.from(form.querySelectorAll(SELECTOR)).map(function (input) {
 
