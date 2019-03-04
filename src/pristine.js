@@ -1,5 +1,5 @@
 import { lang } from './lang';
-import { tmpl, findAncestor, groupedElemCount } from './utils';
+import { tmpl, findAncestor, groupedElemCount, mergeConfig } from './utils';
 
 let defaultConfig = {
     classTo: 'form-group',
@@ -38,17 +38,17 @@ _('pattern', { fn: (val, pattern) => { let m = pattern.match(new RegExp('^/(.*?)
 
 
 export default function Pristine(form, config, live){
-    
+
     let self = this;
 
     init(form, config, live);
-    
+
     function init(form, config, live){
 
         form.setAttribute("novalidate", "true");
 
         self.form = form;
-        self.config = config || defaultConfig;
+        self.config = mergeConfig(config, defaultConfig);
         self.live = !(live === false);
         self.fields = Array.from(form.querySelectorAll(SELECTOR)).map(function (input) {
 
