@@ -133,9 +133,9 @@ export default function Pristine(form, config, live){
      */
     self.getErrors = function(input) {
         if (!input){
-            var erroneousFields = [];
-            for(var i=0; i<self.fields.length; i++){
-                var field = self.fields[i];
+            let erroneousFields = [];
+            for(let i=0; i<self.fields.length; i++){
+                let field = self.fields[i];
                 if (field.errors.length){
                     erroneousFields.push({input: field.input, errors: field.errors});
                 }
@@ -174,20 +174,19 @@ export default function Pristine(form, config, live){
 
     /***
      *
-     * @param elemOrName => The dom element when validator is applied on a specific field. A string when it's
-     * a global validator
+     * @param elem => The dom element where the validator is applied to
      * @param fn => validator function
      * @param msg => message to show when validation fails. Supports templating. ${0} for the input's value, ${1} and
      * so on are for the attribute values
      * @param priority => priority of the validator function, higher valued function gets called first.
      * @param halt => whether validation should stop for this field after current validation function
      */
-    self.addValidator = function(elemOrName, fn, msg, priority, halt){
-        if (typeof elemOrName === 'string'){
-            _(elemOrName, {fn, msg, priority, halt});
-        } else if (elemOrName instanceof HTMLElement){
-            elemOrName.pristine.validators.push({fn, msg, priority, halt});
-            elemOrName.pristine.validators.sort( (a, b) => b.priority - a.priority);
+    self.addValidator = function(elem, fn, msg, priority, halt){
+        if (elem instanceof HTMLElement){
+            elem.pristine.validators.push({fn, msg, priority, halt});
+            elem.pristine.validators.sort( (a, b) => b.priority - a.priority);
+        } else {
+            console.warn("The parameter elem must be a dom element");
         }
     };
 
@@ -270,7 +269,7 @@ export default function Pristine(form, config, live){
      * Resets the errors
      */
     self.reset = function () {
-        for(var i in self.fields){
+        for(let i in self.fields){
             self.fields[i].errorElements = null;
         }
         Array.from(self.form.querySelectorAll('.' + PRISTINE_ERROR)).map(function (elem) {
@@ -301,3 +300,16 @@ export default function Pristine(form, config, live){
     return self;
 
 }
+
+/***
+ *
+ * @param name => Name of the global validator
+ * @param fn => validator function
+ * @param msg => message to show when validation fails. Supports templating. ${0} for the input's value, ${1} and
+ * so on are for the attribute values
+ * @param priority => priority of the validator function, higher valued function gets called first.
+ * @param halt => whether validation should stop for this field after current validation function
+ */
+Pristine.addValidator = function(name, fn, msg, priority, halt){
+    _(name, {fn, msg, priority, halt});
+};

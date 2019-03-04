@@ -89,7 +89,8 @@ var pristine = new Pristine(document.getElementById("form1"));
 var elem = document.getElementById("email");
 
 // A validator to check if the first letter is capitalized
-pristine.addValidator(elem, function(value, elem) {
+pristine.addValidator(elem, function(value) {
+    // here `this` refers to the respective input element
     if (value.length && value[0] === value[0].toUpperCase()){
         return true;
     }
@@ -100,9 +101,11 @@ pristine.addValidator(elem, function(value, elem) {
 ### Add a global validator
 ```javascript
 // A validator to check if the input value is within a specified range
-Pristine.addValidator("my-range", function(value, elem, val1, val2) {
-    
-    return parseInt(val1) <= value && value <= parseInt(val2)
+// Global validators must be added before creating the pristine instance
+
+Pristine.addValidator("my-range", function(value, param1, param2) {
+    // here `this` refers to the respective input element
+    return parseInt(param1) <= value && value <= parseInt(param2)
     
 }, "The value (${0}) must be between ${1} and ${2}", 5, false);
 ```
