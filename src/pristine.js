@@ -12,7 +12,7 @@ let defaultConfig = {
 
 const PRISTINE_ERROR = 'pristine-error';
 const SELECTOR = "input:not([type^=hidden]):not([type^=submit]), select, textarea";
-const ALLOWED_ATTRIBUTES = ["required", "min", "max", 'minlength', 'maxlength', 'pattern', 'integer', 'zipcode'];
+const ALLOWED_ATTRIBUTES = ["required", "min", "max", 'minlength', 'maxlength', 'pattern', 'integer', 'zipcode', 'pwdmatch', 'minage', 'validate'];
 
 const validators = {};
 
@@ -36,7 +36,35 @@ _('min', { fn: function(val, limit){ return !val || (this.type === 'checkbox' ? 
 _('max', { fn: function(val, limit){ return !val || (this.type === 'checkbox' ? groupedElemCount(this) <= parseInt(limit) : parseFloat(val) <= parseFloat(limit)); } });
 _('pattern', { fn: (val, pattern) => { let m = pattern.match(new RegExp('^/(.*?)/([gimy]*)$')); return !val || (new RegExp(m[1], m[2])).test(val);} });
 _('zipcode', { fn: function fn(val) { return !val || /^[0-9]{5}(?:-[0-9]{4})?$/.test(val); } });
-
+_('pwdmatch', { fn: function fn(val, otherFieldId) {   //LV
+        var pwd = document.getElementById(otherFieldId).value;
+        return (!pwd && !val) || (pwd === val);
+    } });
+_('minage', { fn: function fn(val, minage) {   //LV
+        // This assumes a date format compatible with JS
+        if (!val) return true;
+        var birthday = new Date(val);
+        var today = new Date();
+        var thisYearBirthday = new Date(today.getFullYear(), birthday.getMonth(), birthday.getDate());
+        var diffYears = today.getFullYear() - birthday.getFullYear();
+        return (diffYears > minage) || ((diffYears == minage) && (thisYearBirthday <= today));
+    } });
+_('validate', { fn: function fn(val, condition) {   //LV
+        // Condition is a JS expression where fields are identified by ID
+        // All required fields must be enumerated as arguments
+        // Example usage:
+        // validate="country == 'DZ' || username == 'admin', country, username"
+        if (!val || !condition) return true;
+        var parameters = {}
+        for (var i = 2; i < arguments.length; i++) {
+            var fieldId = arguments[i].trim();
+            var assignment = "parameters['" + fieldId + "'] = document.getElementById('" + fieldId + "').value"
+            eval(assignment);
+            //replace whole words only
+            condition = condition.replace(new RegExp("\\b" + fieldId + "\\b"), "parameters['" + fieldId + "']");
+        }
+        return eval(condition);
+    } });
 
 export default function Pristine(form, config, live){
 
