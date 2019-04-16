@@ -10,4 +10,5 @@ export const lang = {
     min: "Minimum value for this field is ${1}",
     max: "Maximum value for this field is ${1}",
     pattern: "Input must match the pattern ${1}",
+    zipcode: "This field requires a valid ZIP code",
 };
