@@ -104,12 +104,10 @@
             return !val || /^[0-9]{5}(?:-[0-9]{4})?$/.test(val);
         } });
     _('pwdmatch', { fn: function fn(val, otherFieldId) {
-            //LV
             var pwd = document.getElementById(otherFieldId).value;
             return !pwd && !val || pwd === val;
         } });
     _('minage', { fn: function fn(val, minage) {
-            //LV
             // This assumes a date format compatible with JS
             if (!val) return true;
             var birthday = new Date(val);
@@ -119,16 +117,15 @@
             return diffYears > minage || diffYears == minage && thisYearBirthday <= today;
         } });
     _('validate', { fn: function fn(val, condition) {
-            //LV
             // Condition is a JS expression where fields are identified by ID
             // All required fields must be enumerated as arguments
             // Example usage:
             // validate="country == 'DZ' || username == 'admin', country, username"
             if (!val || !condition) return true;
+            var parameters = {};
             for (var i = 2; i < arguments.length; i++) {
                 var fieldId = arguments[i].trim();
-                var assignment = "parameters['" + fieldId + "'] = document.getElementById('" + fieldId + "').value";
-                eval(assignment);
+                parameters[fieldId] = document.getElementById(fieldId).value;
                 //replace whole words only
                 condition = condition.replace(new RegExp("\\b" + fieldId + "\\b"), "parameters['" + fieldId + "']");
             }

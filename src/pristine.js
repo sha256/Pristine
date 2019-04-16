@@ -35,12 +35,12 @@ _('maxlength', { fn: (val, length) => !val || val.length <= parseInt(length) });
 _('min', { fn: function(val, limit){ return !val || (this.type === 'checkbox' ? groupedElemCount(this) >= parseInt(limit) : parseFloat(val) >= parseFloat(limit)); } });
 _('max', { fn: function(val, limit){ return !val || (this.type === 'checkbox' ? groupedElemCount(this) <= parseInt(limit) : parseFloat(val) <= parseFloat(limit)); } });
 _('pattern', { fn: (val, pattern) => { let m = pattern.match(new RegExp('^/(.*?)/([gimy]*)$')); return !val || (new RegExp(m[1], m[2])).test(val);} });
-_('zipcode', { fn: function fn(val) { return !val || /^[0-9]{5}(?:-[0-9]{4})?$/.test(val); } });
-_('pwdmatch', { fn: function fn(val, otherFieldId) {   //LV
+_('zipcode', { fn: (val) => !val || /^[0-9]{5}(?:-[0-9]{4})?$/.test(val) });
+_('pwdmatch', { fn: function fn(val, otherFieldId) {
         var pwd = document.getElementById(otherFieldId).value;
         return (!pwd && !val) || (pwd === val);
     } });
-_('minage', { fn: function fn(val, minage) {   //LV
+_('minage', { fn: function fn(val, minage) {
         // This assumes a date format compatible with JS
         if (!val) return true;
         var birthday = new Date(val);
@@ -49,7 +49,7 @@ _('minage', { fn: function fn(val, minage) {   //LV
         var diffYears = today.getFullYear() - birthday.getFullYear();
         return (diffYears > minage) || ((diffYears == minage) && (thisYearBirthday <= today));
     } });
-_('validate', { fn: function fn(val, condition) {   //LV
+_('validate', { fn: function fn(val, condition) {
         // Condition is a JS expression where fields are identified by ID
         // All required fields must be enumerated as arguments
         // Example usage:
@@ -58,8 +58,7 @@ _('validate', { fn: function fn(val, condition) {   //LV
         var parameters = {}
         for (var i = 2; i < arguments.length; i++) {
             var fieldId = arguments[i].trim();
-            var assignment = "parameters['" + fieldId + "'] = document.getElementById('" + fieldId + "').value"
-            eval(assignment);
+            parameters[fieldId] = document.getElementById(fieldId).value;
             //replace whole words only
             condition = condition.replace(new RegExp("\\b" + fieldId + "\\b"), "parameters['" + fieldId + "']");
         }
