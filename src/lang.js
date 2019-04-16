@@ -11,4 +11,6 @@ export const lang = {
     max: "Maximum value for this field is ${1}",
     pattern: "Input must match the pattern ${1}",
     zipcode: "This field requires a valid ZIP code",
+    minage: "The user must be at least ${1} years old",
+    validate: "Condition not satisfied: ${1}",
 };
