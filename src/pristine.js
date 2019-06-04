@@ -206,7 +206,7 @@ export default function Pristine(form, config, live){
         if (self.config.classTo === self.config.errorTextParent){
             errorTextParent = errorClassElement;
         } else {
-            errorTextParent = errorClassElement.querySelector(self.errorTextParent);
+            errorTextParent = errorClassElement.querySelector('.' + self.config.errorTextParent);
         }
         if (errorTextParent){
             errorTextElement = errorTextParent.querySelector('.' + PRISTINE_ERROR);
