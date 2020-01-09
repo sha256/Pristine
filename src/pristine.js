@@ -1,5 +1,5 @@
 import { lang } from './lang';
-import { tmpl, findAncestor, groupedElemCount, mergeConfig } from './utils';
+import { tmpl, findAncestor, groupedElemCount, mergeConfig, isFunction } from './utils';
 
 let defaultConfig = {
     classTo: 'form-group',
@@ -162,8 +162,14 @@ export default function Pristine(form, config, live){
             params[0] = field.input.value;
             if (!validator.fn.apply(field.input, params)){
                 valid = false;
-                let error = field.messages[validator.name] || validator.msg;
-                errors.push(tmpl.apply(error, params));
+
+                if (isFunction(validator.msg)) {
+                    errors.push(validator.msg(field.input.value, params))
+                } else {
+                    let error = field.messages[validator.name] || validator.msg;
+                    errors.push(tmpl.apply(error, params));
+                }
+
                 if (validator.halt === true){
                     break;
                 }
