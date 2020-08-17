@@ -30,7 +30,7 @@ _('text', { fn: (val) => true, priority: 0});
 _('required', { fn: function(val){ return (this.type === 'radio' || this.type === 'checkbox') ? groupedElemCount(this) : val !== undefined && val !== ''}, priority: 99, halt: true});
 _('email', { fn: (val) => !val || EMAIL_REGEX.test(val)});
 _('number', { fn: (val) => !val || !isNaN(parseFloat(val)), priority: 2 });
-_('integer', { fn: (val) => val && /^\d+$/.test(val) });
+_('integer', { fn: (val) => !val || /^\d+$/.test(val) });
 _('minlength', { fn: (val, length) => !val || val.length >= parseInt(length) });
 _('maxlength', { fn: (val, length) => !val || val.length <= parseInt(length) });
 _('min', { fn: function(val, limit){ return !val || (this.type === 'checkbox' ? groupedElemCount(this) >= parseInt(limit) : parseFloat(val) >= parseFloat(limit)); } });
@@ -142,6 +142,9 @@ export default function Pristine(form, config, live){
                 }
             }
             return erroneousFields;
+        }
+        if (input.tagName && input.tagName.toLowerCase() === "select"){
+            return input.pristine.errors;
         }
         return input.length ? input[0].pristine.errors : input.pristine.errors;
     };
