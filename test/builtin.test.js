@@ -1,3 +1,4 @@
+import Pristine from "../src/pristine";
 
 describe('Required', function() {
 
