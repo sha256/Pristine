@@ -134,7 +134,7 @@ Add an attribute like `data-pristine-<ValidatorName>-message`with the custom mes
 | `maxlength` | `maxlength="10"` or `data-pristine-maxlength="10"` | |
 | `min` | `min="20"` or `data-pristine-min="20"` | |
 | `max` | `max="100"` or `data-pristine-max="100"` | |
-| `pattern` | `pattern="/[a-z]+$/i"` or `data-pristine-pattern="/[a-z]+$/i"` ||
+| `pattern` | `pattern="/[a-z]+$/i"` or `data-pristine-pattern="/[a-z]+$/i"`,  `\` must be escaped (replace with `\\`) ||
 
 
 
@@ -169,7 +169,7 @@ Add an attribute like `data-pristine-<ValidatorName>-message`with the custom mes
 | ---       | ----     |   -----   | ---        |
 | `elem`| - | <center>✔</center> | The dom element where validator is applied to.|
 | `fn`| - | <center>✔</center> | The function that validates the field. Value of the input field gets passed as the first parameter, and the attribute value (split using comma) as the subsequent parameters. For example, for `<input data-pristine-my-validator="10,20,dhaka" value="myValue"/>`, validator function get called like `fn("myValue", 10, 20, "dhaka")`. Inside the function `this` refers to the input element|
-| `message`| - | <center>✔</center> | The message to show when the validation fails. It supports simple templating. `${0}` for the input's value, `${1}` and so on are for the attribute values. For the above example, `${0}` will get replaced by `myValue`, `${1}` by `10`, `${2}` by `20`, `${3}` by `dhaka`.|
+| `message`| - | <center>✔</center> | The message to show when the validation fails. It supports simple templating. `${0}` for the input's value, `${1}` and so on are for the attribute values. For the above example, `${0}` will get replaced by `myValue`, `${1}` by `10`, `${2}` by `20`, `${3}` by `dhaka`. It can also be a function which should return the error string. The values and inputs are available as function arguments|
 | `priority`| 1 | <center>✕</center> | Priority of the validator function. The higher the value, the earlier it gets called when there are multiple validators on one field. |
 | `halt`| `false` | <center>✕</center> | Whether to halt validation on the current field after this validation. When `true` after validating the current validator, rest of the validators are ignored on the current field.|
 
