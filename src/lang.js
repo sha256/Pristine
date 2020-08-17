@@ -13,5 +13,5 @@ export const lang = {
     zipcode: "This field requires a valid ZIP code",
     pwdmatch: "The two passwords don't match",
     minage: "The user must be at least ${1} years old",
-    validate: "Condition not satisfied: ${1}",
+    validate: "Condition not satisfied: ${1}"
 };

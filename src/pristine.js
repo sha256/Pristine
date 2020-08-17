@@ -1,5 +1,5 @@
 import { lang } from './lang';
-import { tmpl, findAncestor, groupedElemCount, mergeConfig } from './utils';
+import { tmpl, findAncestor, groupedElemCount, mergeConfig, isFunction } from './utils';
 
 let defaultConfig = {
     classTo: 'form-group',
@@ -13,6 +13,7 @@ let defaultConfig = {
 const PRISTINE_ERROR = 'pristine-error';
 const SELECTOR = "input:not([type^=hidden]):not([type^=submit]), select, textarea";
 const ALLOWED_ATTRIBUTES = ["required", "min", "max", 'minlength', 'maxlength', 'pattern', 'integer', 'zipcode', 'pwdmatch', 'minage', 'validate'];
+const EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 
 const validators = {};
 
@@ -27,7 +28,7 @@ const _ = function (name, validator) {
 
 _('text', { fn: (val) => true, priority: 0});
 _('required', { fn: function(val){ return (this.type === 'radio' || this.type === 'checkbox') ? groupedElemCount(this) : val !== undefined && val !== ''}, priority: 99, halt: true});
-_('email', { fn: (val) => !val || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)});
+_('email', { fn: (val) => !val || EMAIL_REGEX.test(val)});
 _('number', { fn: (val) => !val || !isNaN(parseFloat(val)), priority: 2 });
 _('integer', { fn: (val) => !val || /^\d+$/.test(val) });
 _('minlength', { fn: (val, length) => !val || val.length >= parseInt(length) });
@@ -189,8 +190,14 @@ export default function Pristine(form, config, live){
             params[0] = field.input.value;
             if (!validator.fn.apply(field.input, params)){
                 valid = false;
-                let error = field.messages[validator.name] || validator.msg;
-                errors.push(tmpl.apply(error, params));
+
+                if (isFunction(validator.msg)) {
+                    errors.push(validator.msg(field.input.value, params))
+                } else {
+                    let error = field.messages[validator.name] || validator.msg;
+                    errors.push(tmpl.apply(error, params));
+                }
+
                 if (validator.halt === true){
                     break;
                 }
@@ -234,7 +241,7 @@ export default function Pristine(form, config, live){
         if (self.config.classTo === self.config.errorTextParent){
             errorTextParent = errorClassElement;
         } else {
-            errorTextParent = errorClassElement.querySelector(self.errorTextParent);
+            errorTextParent = errorClassElement.querySelector('.' + self.config.errorTextParent);
         }
         if (errorTextParent){
             errorTextElement = errorTextParent.querySelector('.' + PRISTINE_ERROR);
