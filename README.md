@@ -226,3 +226,7 @@ Add an attribute like `data-pristine-<ValidatorName>-message`with the custom mes
 <br/><br/>
 > The goal of this library is not to provide every possible type of validation and thus becoming a bloat. 
 > The goal is to provide most common types of validations and a neat way to add custom validators.
+
+## License
+
+[MIT](http://opensource.org/licenses/MIT)
