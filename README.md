@@ -138,7 +138,7 @@ Add an attribute like `data-pristine-<ValidatorName>-message`with the custom mes
 | `zipcode`| `data-pristine-type="zipcode"`| Validates ZIP code |
 | `minage`| `data-pristine-minage="14"`| Validates user minimum age |
 | `pwdmatch`| `data-pristine-pwdmatch="other-field-id"`| Check if passwords are equal |
-| `validate`| `data-pristine-validate="js-code"`| Validates using custom code |
+| `validate`| `data-pristine-validate="js-code"`| Validates using custom code, where field-id's can be used as variables |
 
 ## API
 **Pristine(form, config, live)**
