@@ -135,8 +135,10 @@ Add an attribute like `data-pristine-<ValidatorName>-message`with the custom mes
 | `min` | `min="20"` or `data-pristine-min="20"` | |
 | `max` | `max="100"` or `data-pristine-max="100"` | |
 | `pattern` | `pattern="/[a-z]+$/i"` or `data-pristine-pattern="/[a-z]+$/i"` ||
-
-
+| `zipcode`| `data-pristine-type="zipcode"`| Validates ZIP code |
+| `minage`| `data-pristine-minage="14"`| Validates user minimum age |
+| `pwdmatch`| `data-pristine-pwdmatch="other-field-id"`| Check if passwords are equal |
+| `validate`| `data-pristine-validate="js-code"`| Validates using custom code |
 
 ## API
 **Pristine(form, config, live)**
