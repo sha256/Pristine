@@ -12,7 +12,7 @@ let defaultConfig = {
 
 const PRISTINE_ERROR = 'pristine-error';
 const SELECTOR = "input:not([type^=hidden]):not([type^=submit]), select, textarea";
-const ALLOWED_ATTRIBUTES = ["required", "min", "max", 'minlength', 'maxlength', 'pattern'];
+const ALLOWED_ATTRIBUTES = ["required", "min", "max", 'minlength', 'maxlength', 'pattern', 'equals'];
 const EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 
 const validators = {};
@@ -36,7 +36,7 @@ _('maxlength', { fn: (val, length) => !val || val.length <= parseInt(length) });
 _('min', { fn: function(val, limit){ return !val || (this.type === 'checkbox' ? groupedElemCount(this) >= parseInt(limit) : parseFloat(val) >= parseFloat(limit)); } });
 _('max', { fn: function(val, limit){ return !val || (this.type === 'checkbox' ? groupedElemCount(this) <= parseInt(limit) : parseFloat(val) <= parseFloat(limit)); } });
 _('pattern', { fn: (val, pattern) => { let m = pattern.match(new RegExp('^/(.*?)/([gimy]*)$')); return !val || (new RegExp(m[1], m[2])).test(val);} });
-
+_('equals', { fn: (val, otherFieldId) => { let other = document.getElementById(otherFieldId).value; return (!other && !val) || (other === val); } });
 
 export default function Pristine(form, config, live){
 
