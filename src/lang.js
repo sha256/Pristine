@@ -2,7 +2,11 @@ export const lang = {
     required: "This field is required",
     email: "This field requires a valid e-mail address",
     number: "This field requires a number",
+<<<<<<< HEAD
     integer: "This field requires an integer number",
+=======
+    integer: "This field requires an integer value",
+>>>>>>> a869bcc602917acc30347d59ee37181f7190d7ee
     url: "This field requires a valid website URL",
     tel: "This field requires a valid telephone number",
     maxlength: "This fields length must be < ${1}",

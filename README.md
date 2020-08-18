@@ -134,11 +134,14 @@ Add an attribute like `data-pristine-<ValidatorName>-message`with the custom mes
 | `maxlength` | `maxlength="10"` or `data-pristine-maxlength="10"` | |
 | `min` | `min="20"` or `data-pristine-min="20"` | |
 | `max` | `max="100"` or `data-pristine-max="100"` | |
-| `pattern` | `pattern="/[a-z]+$/i"` or `data-pristine-pattern="/[a-z]+$/i"` ||
+| `pattern` | `pattern="/[a-z]+$/i"` or `data-pristine-pattern="/[a-z]+$/i"`,  `\` must be escaped (replace with `\\`) ||
 | `zipcode`| `data-pristine-type="zipcode"`| Validates ZIP code |
 | `minage`| `data-pristine-minage="14"`| Validates user minimum age |
 | `pwdmatch`| `data-pristine-pwdmatch="other-field-id"`| Check if passwords are equal |
 | `validate`| `data-pristine-validate="js-code"`| Validates using custom code, where field-id's can be used as variables |
+
+
+>>>>>>> a869bcc602917acc30347d59ee37181f7190d7ee
 
 ## API
 **Pristine(form, config, live)**
@@ -171,7 +174,7 @@ Add an attribute like `data-pristine-<ValidatorName>-message`with the custom mes
 | ---       | ----     |   -----   | ---        |
 | `elem`| - | <center>✔</center> | The dom element where validator is applied to.|
 | `fn`| - | <center>✔</center> | The function that validates the field. Value of the input field gets passed as the first parameter, and the attribute value (split using comma) as the subsequent parameters. For example, for `<input data-pristine-my-validator="10,20,dhaka" value="myValue"/>`, validator function get called like `fn("myValue", 10, 20, "dhaka")`. Inside the function `this` refers to the input element|
-| `message`| - | <center>✔</center> | The message to show when the validation fails. It supports simple templating. `${0}` for the input's value, `${1}` and so on are for the attribute values. For the above example, `${0}` will get replaced by `myValue`, `${1}` by `10`, `${2}` by `20`, `${3}` by `dhaka`.|
+| `message`| - | <center>✔</center> | The message to show when the validation fails. It supports simple templating. `${0}` for the input's value, `${1}` and so on are for the attribute values. For the above example, `${0}` will get replaced by `myValue`, `${1}` by `10`, `${2}` by `20`, `${3}` by `dhaka`. It can also be a function which should return the error string. The values and inputs are available as function arguments|
 | `priority`| 1 | <center>✕</center> | Priority of the validator function. The higher the value, the earlier it gets called when there are multiple validators on one field. |
 | `halt`| `false` | <center>✕</center> | Whether to halt validation on the current field after this validation. When `true` after validating the current validator, rest of the validators are ignored on the current field.|
 
@@ -228,3 +231,7 @@ Add an attribute like `data-pristine-<ValidatorName>-message`with the custom mes
 <br/><br/>
 > The goal of this library is not to provide every possible type of validation and thus becoming a bloat. 
 > The goal is to provide most common types of validations and a neat way to add custom validators.
+
+## License
+
+[MIT](http://opensource.org/licenses/MIT)

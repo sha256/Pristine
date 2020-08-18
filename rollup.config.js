@@ -1,5 +1,5 @@
 import babel from 'rollup-plugin-babel';
-import uglify from 'rollup-plugin-uglify';
+import { terser } from "rollup-plugin-terser";
 
 const source = {
     input: 'src/pristine',
@@ -26,7 +26,7 @@ const minified = {
         babel({
             exclude: 'node_modules/**',
         }),
-        uglify()
+        terser()
     ]
 };
 

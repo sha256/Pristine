@@ -143,7 +143,7 @@ export default function Pristine(form, config, live){
 
         let valid = true;
 
-        for(let i in fields){
+        for(let i = 0; fields[i]; i++) {
             let field = fields[i];
             if (_validateField(field)){
                 !silent && _showSuccess(field);
@@ -171,6 +171,9 @@ export default function Pristine(form, config, live){
             }
             return erroneousFields;
         }
+        if (input.tagName && input.tagName.toLowerCase() === "select"){
+            return input.pristine.errors;
+        }
         return input.length ? input[0].pristine.errors : input.pristine.errors;
     };
 
@@ -184,7 +187,7 @@ export default function Pristine(form, config, live){
     function _validateField(field){
         let errors = [];
         let valid = true;
-        for(let i in field.validators){
+        for(let i = 0; field.validators[i]; i++) {
             let validator = field.validators[i];
             let params = field.params[validator.name] ? field.params[validator.name] : [];
             params[0] = field.input.value;
@@ -304,7 +307,7 @@ export default function Pristine(form, config, live){
      * Resets the errors
      */
     self.reset = function () {
-        for(let i in self.fields){
+        for(let i = 0; self.fields[i]; i++) {
             self.fields[i].errorElements = null;
         }
         Array.from(self.form.querySelectorAll('.' + PRISTINE_ERROR)).map(function (elem) {
