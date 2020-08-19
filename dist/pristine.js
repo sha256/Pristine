@@ -103,7 +103,16 @@
             var m = pattern.match(new RegExp('^/(.*?)/([gimy]*)$'));return !val || new RegExp(m[1], m[2]).test(val);
         } });
     _('equals', { fn: function fn(val, otherFieldId) {
-            var other = document.getElementById(otherFieldId).value;return !other && !val || other === val;
+            if (!otherFieldId.startsWith('#')) {
+                console.log('PristineJS config error - Field Id must start with #');
+                return true;
+            }
+            var other = document.getElementById(otherFieldId.substring(1)).value;
+            if (!other) {
+                console.log('PristineJS config error - Field ' + otherFieldId + ' not found');
+                return true;
+            }
+            return !other && !val || other === val;
         } });
 
     function Pristine(form, config, live) {

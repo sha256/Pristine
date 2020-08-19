@@ -36,7 +36,17 @@ _('maxlength', { fn: (val, length) => !val || val.length <= parseInt(length) });
 _('min', { fn: function(val, limit){ return !val || (this.type === 'checkbox' ? groupedElemCount(this) >= parseInt(limit) : parseFloat(val) >= parseFloat(limit)); } });
 _('max', { fn: function(val, limit){ return !val || (this.type === 'checkbox' ? groupedElemCount(this) <= parseInt(limit) : parseFloat(val) <= parseFloat(limit)); } });
 _('pattern', { fn: (val, pattern) => { let m = pattern.match(new RegExp('^/(.*?)/([gimy]*)$')); return !val || (new RegExp(m[1], m[2])).test(val);} });
-_('equals', { fn: (val, otherFieldId) => { let other = document.getElementById(otherFieldId).value; return (!other && !val) || (other === val); } });
+_('equals', { fn: (val, otherFieldId) => {
+    if (!otherFieldId.startsWith('#')) {
+        console.log('PristineJS config error - Field Id must start with #');
+        return true;
+    }
+    let other = document.getElementById(otherFieldId.substring(1)).value;
+    if (!other) {
+        console.log('PristineJS config error - Field ' + otherFieldId + ' not found');
+        return true;
+    }
+    return (!other && !val) || (other === val); } });
 
 export default function Pristine(form, config, live){
 
