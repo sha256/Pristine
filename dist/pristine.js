@@ -60,7 +60,7 @@
 
     var PRISTINE_ERROR = 'pristine-error';
     var SELECTOR = "input:not([type^=hidden]):not([type^=submit]), select, textarea";
-    var ALLOWED_ATTRIBUTES = ["required", "min", "max", 'minlength', 'maxlength', 'pattern', 'equals'];
+    var ALLOWED_ATTRIBUTES = ["required", "min", "max", 'minlength', 'maxlength', 'pattern'];
     var EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
     var validators = {};
@@ -102,18 +102,8 @@
     _('pattern', { fn: function fn(val, pattern) {
             var m = pattern.match(new RegExp('^/(.*?)/([gimy]*)$'));return !val || new RegExp(m[1], m[2]).test(val);
         } });
-    _('equals', { fn: function fn(val, otherFieldId) {
-            if (!otherFieldId.startsWith('#')) {
-                console.log('PristineJS config error - Field Id must start with #');
-                return true;
-            }
-            var otherField = document.getElementById(otherFieldId.substring(1));
-            if (!otherField) {
-                console.log('PristineJS config error - Field ' + otherFieldId + ' not found');
-                return true;
-            }
-            var otherValue = otherField.value;
-            return !otherValue && !val || otherValue === val;
+    _('equals', { fn: function fn(val, otherFieldSelector) {
+            var other = document.querySelector(otherFieldSelector);return other && (!val && !other.value || other.value === val);
         } });
 
     function Pristine(form, config, live) {

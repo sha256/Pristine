@@ -12,7 +12,7 @@ let defaultConfig = {
 
 const PRISTINE_ERROR = 'pristine-error';
 const SELECTOR = "input:not([type^=hidden]):not([type^=submit]), select, textarea";
-const ALLOWED_ATTRIBUTES = ["required", "min", "max", 'minlength', 'maxlength', 'pattern', 'equals'];
+const ALLOWED_ATTRIBUTES = ["required", "min", "max", 'minlength', 'maxlength', 'pattern'];
 const EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 
 const validators = {};
@@ -36,18 +36,7 @@ _('maxlength', { fn: (val, length) => !val || val.length <= parseInt(length) });
 _('min', { fn: function(val, limit){ return !val || (this.type === 'checkbox' ? groupedElemCount(this) >= parseInt(limit) : parseFloat(val) >= parseFloat(limit)); } });
 _('max', { fn: function(val, limit){ return !val || (this.type === 'checkbox' ? groupedElemCount(this) <= parseInt(limit) : parseFloat(val) <= parseFloat(limit)); } });
 _('pattern', { fn: (val, pattern) => { let m = pattern.match(new RegExp('^/(.*?)/([gimy]*)$')); return !val || (new RegExp(m[1], m[2])).test(val);} });
-_('equals', { fn: (val, otherFieldId) => {
-    if (!otherFieldId.startsWith('#')) {
-        console.log('PristineJS config error - Field Id must start with #');
-        return true;
-    }
-    let otherField = document.getElementById(otherFieldId.substring(1));
-    if (!otherField) {
-        console.log('PristineJS config error - Field ' + otherFieldId + ' not found');
-        return true;
-    }
-    let otherValue = otherField.value;
-    return (!otherValue && !val) || (otherValue === val); } });
+_('equals', { fn: (val, otherFieldSelector) => { let other = document.querySelector(otherFieldSelector); return (other) && ((!val && !other.value) || (other.value === val)); } });
 
 export default function Pristine(form, config, live){
 

@@ -135,7 +135,7 @@ Add an attribute like `data-pristine-<ValidatorName>-message`with the custom mes
 | `min` | `min="20"` or `data-pristine-min="20"` | |
 | `max` | `max="100"` or `data-pristine-max="100"` | |
 | `pattern` | `pattern="/[a-z]+$/i"` or `data-pristine-pattern="/[a-z]+$/i"`,  `\` must be escaped (replace with `\\`) ||
-| `equals` | `data-pristine-equals="#field-id"`| Check that two fields are equal |
+| `equals` | `data-pristine-equals="#field-selector"`| Check that two fields are equal |
 
 
 
