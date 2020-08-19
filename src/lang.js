@@ -10,4 +10,5 @@ export const lang = {
     min: "Minimum value for this field is ${1}",
     max: "Maximum value for this field is ${1}",
     pattern: "Please match the requested format",
+    equals: "The two fields do not match",
 };
