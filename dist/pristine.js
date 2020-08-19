@@ -15,7 +15,8 @@
         minlength: "This fields length must be > ${1}",
         min: "Minimum value for this field is ${1}",
         max: "Maximum value for this field is ${1}",
-        pattern: "Please match the requested format"
+        pattern: "Please match the requested format",
+        equals: "The two fields do not match"
     };
 
     function findAncestor(el, cls) {
@@ -100,6 +101,9 @@
         } });
     _('pattern', { fn: function fn(val, pattern) {
             var m = pattern.match(new RegExp('^/(.*?)/([gimy]*)$'));return !val || new RegExp(m[1], m[2]).test(val);
+        } });
+    _('equals', { fn: function fn(val, otherFieldSelector) {
+            var other = document.querySelector(otherFieldSelector);return other && (!val && !other.value || other.value === val);
         } });
 
     function Pristine(form, config, live) {
