@@ -182,7 +182,7 @@
 
             var valid = true;
 
-            for (var i in fields) {
+            for (var i = 0; fields[i]; i++) {
                 var field = fields[i];
                 if (_validateField(field)) {
                     !silent && _showSuccess(field);
@@ -226,7 +226,7 @@
         function _validateField(field) {
             var errors = [];
             var valid = true;
-            for (var i in field.validators) {
+            for (var i = 0; field.validators[i]; i++) {
                 var validator = field.validators[i];
                 var params = field.params[validator.name] ? field.params[validator.name] : [];
                 params[0] = field.input.value;
@@ -351,7 +351,7 @@
          * Resets the errors
          */
         self.reset = function () {
-            for (var i in self.fields) {
+            for (var i = 0; self.fields[i]; i++) {
                 self.fields[i].errorElements = null;
             }
             Array.from(self.form.querySelectorAll('.' + PRISTINE_ERROR)).map(function (elem) {
