@@ -107,12 +107,13 @@
                 console.log('PristineJS config error - Field Id must start with #');
                 return true;
             }
-            var other = document.getElementById(otherFieldId.substring(1)).value;
-            if (!other) {
+            var otherField = document.getElementById(otherFieldId.substring(1));
+            if (!otherField) {
                 console.log('PristineJS config error - Field ' + otherFieldId + ' not found');
                 return true;
             }
-            return !other && !val || other === val;
+            var otherValue = otherField.value;
+            return !otherValue && !val || otherValue === val;
         } });
 
     function Pristine(form, config, live) {
