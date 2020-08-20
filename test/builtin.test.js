@@ -148,7 +148,7 @@ describe('Input types', function() {
             <input id="input-number" type="number" class="form-control" />
             <input id="input-email" type="email" class="form-control" />
             <input id="input-integer" data-pristine-type="integer" class="form-control" />
-            <input id="input-pattern" pattern="/^\\d+\\.\\d{2}$/g" class="form-control" />
+            <input id="input-pattern" pattern="/^\\d+\\.\\d{2,2}$/g" class="form-control" />
 					</div>
 			 </form>
 			</div>`;

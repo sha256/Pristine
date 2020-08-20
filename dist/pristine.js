@@ -158,7 +158,7 @@
             if (validator) {
                 fns.push(validator);
                 if (value) {
-                    var valueParams = value.split(',');
+                    var valueParams = name === "pattern" ? [value] : value.split(',');
                     valueParams.unshift(null); // placeholder for input's value
                     params[name] = valueParams;
                 }
