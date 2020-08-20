@@ -1,7 +1,7 @@
 
 # Demos
 
-Following fiddles are created with [CodePen](https://codepen.io/).
+Following fiddles are created with [CodePen](https://codepen.io/){:target="_blank"}.
 
 ## 1. Real-world examples
 
