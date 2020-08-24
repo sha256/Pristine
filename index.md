@@ -5,7 +5,7 @@
 
 ## Living demo
 
-Some examples of use can be found at http://pristine.js.org/demo.html
+Some examples of use can be found [here](http://pristine.js.org/demo.html).
 
 ## Usage
 
