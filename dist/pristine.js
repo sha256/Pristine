@@ -15,7 +15,8 @@
         minlength: "This fields length must be > ${1}",
         min: "Minimum value for this field is ${1}",
         max: "Maximum value for this field is ${1}",
-        pattern: "Please match the requested format"
+        pattern: "Please match the requested format",
+        equals: "The two fields do not match"
     };
 
     function findAncestor(el, cls) {
@@ -101,6 +102,9 @@
     _('pattern', { fn: function fn(val, pattern) {
             var m = pattern.match(new RegExp('^/(.*?)/([gimy]*)$'));return !val || new RegExp(m[1], m[2]).test(val);
         } });
+    _('equals', { fn: function fn(val, otherFieldSelector) {
+            var other = document.querySelector(otherFieldSelector);return other && (!val && !other.value || other.value === val);
+        } });
 
     function Pristine(form, config, live) {
 
@@ -154,7 +158,7 @@
             if (validator) {
                 fns.push(validator);
                 if (value) {
-                    var valueParams = value.split(',');
+                    var valueParams = name === "pattern" ? [value] : value.split(',');
                     valueParams.unshift(null); // placeholder for input's value
                     params[name] = valueParams;
                 }
@@ -182,7 +186,7 @@
 
             var valid = true;
 
-            for (var i in fields) {
+            for (var i = 0; fields[i]; i++) {
                 var field = fields[i];
                 if (_validateField(field)) {
                     !silent && _showSuccess(field);
@@ -226,7 +230,7 @@
         function _validateField(field) {
             var errors = [];
             var valid = true;
-            for (var i in field.validators) {
+            for (var i = 0; field.validators[i]; i++) {
                 var validator = field.validators[i];
                 var params = field.params[validator.name] ? field.params[validator.name] : [];
                 params[0] = field.input.value;
@@ -351,7 +355,7 @@
          * Resets the errors
          */
         self.reset = function () {
-            for (var i in self.fields) {
+            for (var i = 0; self.fields[i]; i++) {
                 self.fields[i].errorElements = null;
             }
             Array.from(self.form.querySelectorAll('.' + PRISTINE_ERROR)).map(function (elem) {
