@@ -3,9 +3,9 @@
 
 **~4kb minified, ~2kb gzipped, no dependencies**
 
-## [Demo](http://pristine.js.org/demo.html)
+## Living demo
 
-**This documentation is being updated and currently incomplete**
+Some examples of use can be found [here](http://pristine.js.org/demo.html).
 
 ## Usage
 
