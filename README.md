@@ -215,6 +215,25 @@ Add an attribute like `data-pristine-<ValidatorName>-message`with the custom mes
 
 <br/>
 
+**Pristine.setLocale(locale)**
+<br/>*Set the current locale globally*
+
+| Parameter | Default  | Required? | Description|
+| ---       | ----     |   -----   | ---        |
+| `locale`| - | <center>✔</center> | Error messages on new Pristine forms will be displayed according to this locale|
+
+<br/>
+
+**Pristine.addMessages(locale, messages)**
+<br/>*Set the current locale globally*
+
+| Parameter | Default  | Required? | Description|
+| ---       | ----     |   -----   | ---        |
+| `locale`| - | <center>✔</center> | The corresponding locale|
+| `messages`| - | <center>✔</center> |Object containing validator names as keys and error texts as values |
+
+<br/>
+
 **pristine.reset()**
 <br/>*Reset the errors in the form*
     

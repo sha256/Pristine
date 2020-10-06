@@ -15,12 +15,14 @@ const SELECTOR = "input:not([type^=hidden]):not([type^=submit]), select, textare
 const ALLOWED_ATTRIBUTES = ["required", "min", "max", 'minlength', 'maxlength', 'pattern'];
 const EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 
+const MESSAGE_REGEX = /-message(?:-([a-z]{2}(?:_[A-Z]{2})?))?/; // matches, -message, -message-en, -message-en_US
+let currentLocale = 'en';
 const validators = {};
 
 const _ = function (name, validator) {
     validator.name = name;
     if (!validator.msg)
-        validator.msg = lang[name];
+        validator.msg = {en: lang.en[name]};
     if (validator.priority === undefined)
         validator.priority = 1;
     validators[name] = validator;
@@ -60,8 +62,12 @@ export default function Pristine(form, config, live){
             [].forEach.call(input.attributes, function (attr) {
                 if (/^data-pristine-/.test(attr.name)) {
                     let name = attr.name.substr(14);
-                    if (name.endsWith('-message')){
-                        messages[name.slice(0, name.length-8)] = attr.value;
+                    let messageMatch = name.match(MESSAGE_REGEX);
+                    if (messageMatch !== null){
+                        let locale = messageMatch[1] === undefined ? 'en' : messageMatch[1];
+                        if (!messages.hasOwnProperty(locale))
+                            messages[locale] = {};
+                        messages[locale][name.slice(0, name.length - messageMatch[0].length)] = attr.value;
                         return;
                     }
                     if (name === 'type') name = attr.value;
@@ -169,8 +175,11 @@ export default function Pristine(form, config, live){
                 if (isFunction(validator.msg)) {
                     errors.push(validator.msg(field.input.value, params))
                 } else {
-                    let error = field.messages[validator.name] || validator.msg;
-                    errors.push(tmpl.apply(error, params));
+                    if (field.messages[currentLocale] && field.messages[currentLocale][validator.name]){
+                        errors.push(tmpl.apply(field.messages[currentLocale][validator.name], params));
+                    } else {
+                        errors.push(tmpl.apply(validator.msg[currentLocale], params));
+                    }
                 }
 
                 if (validator.halt === true){
@@ -183,7 +192,7 @@ export default function Pristine(form, config, live){
     }
 
     /***
-     *
+     * Add a validator to a specific dom element in a form
      * @param elem => The dom element where the validator is applied to
      * @param fn => validator function
      * @param msg => message to show when validation fails. Supports templating. ${0} for the input's value, ${1} and
@@ -323,3 +332,20 @@ export default function Pristine(form, config, live){
 Pristine.addValidator = function(name, fn, msg, priority, halt){
     _(name, {fn, msg, priority, halt});
 };
+
+Pristine.addMessages = function(locale, messages){
+    let currentLang = lang.hasOwnProperty(locale) ? lang[locale] : lang[locale] = {};
+
+    Object.keys(messages).forEach(function(key, index) {
+        currentLang[key] =  messages[key];
+    });
+}
+
+Pristine.setLocale = function (locale){
+    currentLocale = locale;
+    Object.keys(validators).forEach(function(key, index) {
+        if (lang[locale] && lang[locale][key]) {
+            validators[key].msg[locale] = lang[locale][key];
+        }
+    });
+}
