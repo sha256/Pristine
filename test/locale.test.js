@@ -11,6 +11,7 @@ describe('Locale', function() {
                         <input id="input-custom" type="text" data-pristine-required-message="requires a value" required class="form-control" />
                         <input id="input-custom-locale-en" type="text" data-pristine-required-message-en="English  message" required class="form-control" />
                         <input id="input-custom-locale-bn" type="text" data-pristine-required-message-bn="বাংলা মেসেজ" required class="form-control" />
+                        <input id="input-custom-locale-without-message" type="text" data-pristine-first-cap="true" class="form-control" />
 					</div>
 			 </form>
 			</div>`;
@@ -96,5 +97,24 @@ describe('Locale', function() {
         expect(pristine.getErrors(input).length).toBe(1);
         expect(pristine.getErrors(input)[0]).toBe("বাংলা মেসেজ");
 
+    });
+
+    it(`Global validators should use globally added messages when not specified`, () => {
+
+        let form = document.getElementById("fixture")
+        let input = document.getElementById("input-custom-locale-without-message")
+
+        Pristine.addValidator("first-cap", (val) => val[0] === val[0].toUpperCase(), null, 1, false);
+
+        Pristine.addMessages('en', {
+            'first-cap': "First character should be capitalized"
+        })
+
+        let pristine = new Pristine(form);
+        input.value = "first";
+        expect(pristine.validate(input)).toBe(false);
+
+        expect(pristine.getErrors(input).length).toBe(1);
+        expect(pristine.getErrors(input)[0]).toBe("First character should be capitalized");
     });
 });

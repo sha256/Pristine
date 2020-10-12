@@ -1,5 +1,5 @@
 import { lang } from './lang';
-import { tmpl, findAncestor, groupedElemCount, mergeConfig, isFunction } from './utils';
+import { tmpl, findAncestor, groupedElemCount, mergeConfig } from './utils';
 
 let defaultConfig = {
     classTo: 'form-group',
@@ -21,8 +21,6 @@ const validators = {};
 
 const _ = function (name, validator) {
     validator.name = name;
-    if (!validator.msg)
-        validator.msg = {en: lang.en[name]};
     if (validator.priority === undefined)
         validator.priority = 1;
     validators[name] = validator;
@@ -172,14 +170,18 @@ export default function Pristine(form, config, live){
             if (!validator.fn.apply(field.input, params)){
                 valid = false;
 
-                if (isFunction(validator.msg)) {
+                if (typeof validator.msg === "function") {
                     errors.push(validator.msg(field.input.value, params))
+                } else if (typeof validator.msg === "string"){
+                    errors.push(tmpl.apply(validator.msg, params));
+                } else if (validator.msg === Object(validator.msg) && validator.msg[currentLocale]){ // typeof generates unnecessary babel code
+                    errors.push(tmpl.apply(validator.msg[currentLocale], params));
+                } else if (field.messages[currentLocale] && field.messages[currentLocale][validator.name]){
+                    errors.push(tmpl.apply(field.messages[currentLocale][validator.name], params));
+                } else if (lang[currentLocale] && lang[currentLocale][validator.name]){
+                    errors.push(tmpl.apply(lang[currentLocale][validator.name], params));
                 } else {
-                    if (field.messages[currentLocale] && field.messages[currentLocale][validator.name]){
-                        errors.push(tmpl.apply(field.messages[currentLocale][validator.name], params));
-                    } else {
-                        errors.push(tmpl.apply(validator.msg[currentLocale], params));
-                    }
+                    errors.push(tmpl.apply(lang[currentLocale].default, params));
                 }
 
                 if (validator.halt === true){
@@ -334,18 +336,13 @@ Pristine.addValidator = function(name, fn, msg, priority, halt){
 };
 
 Pristine.addMessages = function(locale, messages){
-    let currentLang = lang.hasOwnProperty(locale) ? lang[locale] : lang[locale] = {};
+    let langObj = lang.hasOwnProperty(locale) ? lang[locale] : lang[locale] = {};
 
     Object.keys(messages).forEach(function(key, index) {
-        currentLang[key] =  messages[key];
+        langObj[key] =  messages[key];
     });
 }
 
 Pristine.setLocale = function (locale){
     currentLocale = locale;
-    Object.keys(validators).forEach(function(key, index) {
-        if (lang[locale] && lang[locale][key]) {
-            validators[key].msg[locale] = lang[locale][key];
-        }
-    });
 }

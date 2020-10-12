@@ -12,5 +12,6 @@ export const lang = {
         max: "Maximum value for this field is ${1}",
         pattern: "Please match the requested format",
         equals: "The two fields do not match",
+        default: "Please enter a correct value"
     }
 };
