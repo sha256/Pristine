@@ -5,18 +5,20 @@
 }(this, (function () { 'use strict';
 
     var lang = {
-        required: "This field is required",
-        email: "This field requires a valid e-mail address",
-        number: "This field requires a number",
-        integer: "This field requires an integer value",
-        url: "This field requires a valid website URL",
-        tel: "This field requires a valid telephone number",
-        maxlength: "This fields length must be < ${1}",
-        minlength: "This fields length must be > ${1}",
-        min: "Minimum value for this field is ${1}",
-        max: "Maximum value for this field is ${1}",
-        pattern: "Please match the requested format",
-        equals: "The two fields do not match"
+        en: {
+            required: "This field is required",
+            email: "This field requires a valid e-mail address",
+            number: "This field requires a number",
+            integer: "This field requires an integer value",
+            url: "This field requires a valid website URL",
+            tel: "This field requires a valid telephone number",
+            maxlength: "This fields length must be < ${1}",
+            minlength: "This fields length must be > ${1}",
+            min: "Minimum value for this field is ${1}",
+            max: "Maximum value for this field is ${1}",
+            pattern: "Please match the requested format",
+            equals: "The two fields do not match"
+        }
     };
 
     function findAncestor(el, cls) {
@@ -63,11 +65,13 @@
     var ALLOWED_ATTRIBUTES = ["required", "min", "max", 'minlength', 'maxlength', 'pattern'];
     var EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
+    var MESSAGE_REGEX = /-message(?:-([a-z]{2}(?:_[A-Z]{2})?))?/; // matches, -message, -message-en, -message-en_US
+    var currentLocale = 'en';
     var validators = {};
 
     var _ = function _(name, validator) {
         validator.name = name;
-        if (!validator.msg) validator.msg = lang[name];
+        if (!validator.msg) validator.msg = { en: lang['en'][name] };
         if (validator.priority === undefined) validator.priority = 1;
         validators[name] = validator;
     };
@@ -128,8 +132,10 @@
                 [].forEach.call(input.attributes, function (attr) {
                     if (/^data-pristine-/.test(attr.name)) {
                         var name = attr.name.substr(14);
-                        if (name.endsWith('-message')) {
-                            messages[name.slice(0, name.length - 8)] = attr.value;
+                        var messageMatch = name.match(MESSAGE_REGEX);
+                        if (messageMatch !== null) {
+                            var locale = messageMatch[1] === undefined ? 'en' : messageMatch[0];
+                            messages[locale][name.slice(0, messageMatch.length)] = attr.value;
                             return;
                         }
                         if (name === 'type') name = attr.value;
@@ -240,8 +246,11 @@
                     if (isFunction(validator.msg)) {
                         errors.push(validator.msg(field.input.value, params));
                     } else {
-                        var error = field.messages[validator.name] || validator.msg;
-                        errors.push(tmpl.apply(error, params));
+                        if (field.messages[currentLocale] && field.messages[currentLocale][validator.name]) {
+                            errors.push(tmpl.apply(field.messages[currentLocale][validator.name], params));
+                        } else {
+                            errors.push(tmpl.apply(validator.msg[currentLocale], params));
+                        }
                     }
 
                     if (validator.halt === true) {
@@ -254,7 +263,7 @@
         }
 
         /***
-         *
+         * Add a validator to a specific dom element in a form
          * @param elem => The dom element where the validator is applied to
          * @param fn => validator function
          * @param msg => message to show when validation fails. Supports templating. ${0} for the input's value, ${1} and
@@ -396,6 +405,21 @@
      */
     Pristine.addValidator = function (name, fn, msg, priority, halt) {
         _(name, { fn: fn, msg: msg, priority: priority, halt: halt });
+    };
+
+    Pristine.addMessages = function (locale, messages) {
+        var currentLang = lang.hasOwnProperty(locale) ? lang[locale] : lang[locale] = {};
+
+        Object.keys(messages).forEach(function (key, index) {
+            currentLang[key] = messages[key];
+        });
+    };
+
+    Pristine.setLocale = function (locale) {
+        currentLocale = locale;
+        Object.keys(validators).forEach(function (key, index) {
+            validators[key].msg[locale] = lang[locale][key];
+        });
     };
 
     return Pristine;
