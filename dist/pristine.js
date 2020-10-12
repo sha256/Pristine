@@ -47,10 +47,6 @@
         return obj1;
     }
 
-    function isFunction(obj) {
-        return !!(obj && obj.constructor && obj.call && obj.apply);
-    }
-
     var defaultConfig = {
         classTo: 'form-group',
         errorClass: 'has-danger',
@@ -71,7 +67,6 @@
 
     var _ = function _(name, validator) {
         validator.name = name;
-        if (!validator.msg) validator.msg = { en: lang['en'][name] };
         if (validator.priority === undefined) validator.priority = 1;
         validators[name] = validator;
     };
@@ -134,8 +129,9 @@
                         var name = attr.name.substr(14);
                         var messageMatch = name.match(MESSAGE_REGEX);
                         if (messageMatch !== null) {
-                            var locale = messageMatch[1] === undefined ? 'en' : messageMatch[0];
-                            messages[locale][name.slice(0, messageMatch.length)] = attr.value;
+                            var locale = messageMatch[1] === undefined ? 'en' : messageMatch[1];
+                            if (!messages.hasOwnProperty(locale)) messages[locale] = {};
+                            messages[locale][name.slice(0, name.length - messageMatch[0].length)] = attr.value;
                             return;
                         }
                         if (name === 'type') name = attr.value;
@@ -243,14 +239,17 @@
                 if (!validator.fn.apply(field.input, params)) {
                     valid = false;
 
-                    if (isFunction(validator.msg)) {
+                    if (typeof validator.msg === "function") {
                         errors.push(validator.msg(field.input.value, params));
-                    } else {
-                        if (field.messages[currentLocale] && field.messages[currentLocale][validator.name]) {
-                            errors.push(tmpl.apply(field.messages[currentLocale][validator.name], params));
-                        } else {
-                            errors.push(tmpl.apply(validator.msg[currentLocale], params));
-                        }
+                    } else if (typeof validator.msg === "string") {
+                        errors.push(tmpl.apply(validator.msg, params));
+                    } else if (validator.msg === Object(validator.msg) && validator.msg[currentLocale]) {
+                        // typeof generates unnecessary babel code
+                        errors.push(tmpl.apply(validator.msg[currentLocale], params));
+                    } else if (field.messages[currentLocale] && field.messages[currentLocale][validator.name]) {
+                        errors.push(tmpl.apply(field.messages[currentLocale][validator.name], params));
+                    } else if (lang[currentLocale] && lang[currentLocale][validator.name]) {
+                        errors.push(tmpl.apply(lang[currentLocale][validator.name], params));
                     }
 
                     if (validator.halt === true) {
@@ -408,18 +407,15 @@
     };
 
     Pristine.addMessages = function (locale, messages) {
-        var currentLang = lang.hasOwnProperty(locale) ? lang[locale] : lang[locale] = {};
+        var langObj = lang.hasOwnProperty(locale) ? lang[locale] : lang[locale] = {};
 
         Object.keys(messages).forEach(function (key, index) {
-            currentLang[key] = messages[key];
+            langObj[key] = messages[key];
         });
     };
 
     Pristine.setLocale = function (locale) {
         currentLocale = locale;
-        Object.keys(validators).forEach(function (key, index) {
-            validators[key].msg[locale] = lang[locale][key];
-        });
     };
 
     return Pristine;

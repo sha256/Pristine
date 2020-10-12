@@ -20,6 +20,3 @@ export function mergeConfig(obj1, obj2) {
     return obj1;
 }
 
-export function isFunction(obj) {
-    return !!(obj && obj.constructor && obj.call && obj.apply);
-}
