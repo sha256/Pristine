@@ -239,7 +239,7 @@ export default function Pristine(form, config, live){
             errorClassElement.classList.add(self.config.errorClass);
             
             field.input.classList.remove(self.config.successClass);
-	        field.input.classList.add(self.config.errorClass);
+	    field.input.classList.add(self.config.errorClass);
         }
         if (errorTextElement){
             errorTextElement.innerHTML = field.errors.join('<br/>');
@@ -267,7 +267,7 @@ export default function Pristine(form, config, live){
             errorClassElement.classList.remove(self.config.successClass);
             
             field.input.classList.remove(self.config.errorClass);
-	        field.input.classList.remove(self.config.successClass);
+	    field.input.classList.remove(self.config.successClass);
         }
         if (errorTextElement){
             errorTextElement.innerHTML = '';
