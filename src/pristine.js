@@ -141,7 +141,7 @@ export default function Pristine(form, config, live){
             let erroneousFields = [];
             for(let i=0; i<self.fields.length; i++){
                 let field = self.fields[i];
-                if (field.errors.length){
+                if (field.errors && field.errors.length){
                     erroneousFields.push({input: field.input, errors: field.errors});
                 }
             }
