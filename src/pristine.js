@@ -41,7 +41,8 @@ _('equals', { fn: (val, otherFieldSelector) => { let other = document.querySelec
 export default function Pristine(form, config, live){
 
     let self = this;
-
+    let isreset = false;
+    
     init(form, config, live);
 
     function init(form, config, live){
@@ -107,6 +108,8 @@ export default function Pristine(form, config, live){
      * @returns {boolean} return true when valid false otherwise
      */
     self.validate = function(input, silent){
+        if(isreset) {isreset=false; return;}   
+        
         silent = (input && silent === true) || input === true;
         let fields = self.fields;
         if (input !== true && input !== false){
@@ -300,7 +303,7 @@ export default function Pristine(form, config, live){
             elem.classList.remove(self.config.successClass);
             elem.classList.remove(self.config.errorClass);
         });
-
+        isreset = true;
     };
 
     /***
