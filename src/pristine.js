@@ -41,7 +41,8 @@ _('equals', { fn: (val, otherFieldSelector) => { let other = document.querySelec
 export default function Pristine(form, config, live){
 
     let self = this;
-
+    let isreset = false;
+    
     init(form, config, live);
 
     function init(form, config, live){
@@ -107,6 +108,8 @@ export default function Pristine(form, config, live){
      * @returns {boolean} return true when valid false otherwise
      */
     self.validate = function(input, silent){
+        if(isreset) {isreset=false; return;}   
+        
         silent = (input && silent === true) || input === true;
         let fields = self.fields;
         if (input !== true && input !== false){
@@ -246,8 +249,15 @@ export default function Pristine(form, config, live){
         let errorClassElement = errorElements[0], errorTextElement = errorElements[1];
 
         if(errorClassElement){
-            errorClassElement.classList.remove(self.config.successClass);
-            errorClassElement.classList.add(self.config.errorClass);
+            //errorClassElement.classList.remove(self.config.successClass);
+            //errorClassElement.classList.add(self.config.errorClass);
+            
+            let errCls = createClassarray(self.config.errorClass);
+            let sucCls = createClassarray(self.config.successClass);                        
+            if(sucCls.length) {sucCls.forEach((s) => errorClassElement.classList.remove(s))};      
+            if(errCls.length) {errCls.forEach((e) => errorClassElement.classList.add(e))};
+
+
         }
         if (errorTextElement){
             errorTextElement.innerHTML = field.errors.join('<br/>');
@@ -271,8 +281,12 @@ export default function Pristine(form, config, live){
         let errorClassElement = errorElements[0], errorTextElement = errorElements[1];
         if (errorClassElement){
             // IE > 9 doesn't support multiple class removal
-            errorClassElement.classList.remove(self.config.errorClass);
-            errorClassElement.classList.remove(self.config.successClass);
+            //errorClassElement.classList.remove(self.config.errorClass);
+            //errorClassElement.classList.remove(self.config.successClass);
+            let errCls = createClassarray(self.config.errorClass);
+            let sucCls = createClassarray(self.config.successClass);            
+            if(errCls.length) {errCls.forEach((e) => errorClassElement.classList.remove(e))};
+            if(sucCls.length) {sucCls.forEach((s) => errorClassElement.classList.remove(s))};
         }
         if (errorTextElement){
             errorTextElement.innerHTML = '';
@@ -282,8 +296,10 @@ export default function Pristine(form, config, live){
     }
 
     function _showSuccess(field){
-        let errorClassElement = _removeError(field)[0];
-        errorClassElement && errorClassElement.classList.add(self.config.successClass);
+        let errorClassElement = _removeError(field)[0];        
+        //errorClassElement && errorClassElement.classList.add(self.config.successClass);
+        let sucCls = createClassarray(self.config.successClass);
+        if(sucCls.length) {errorClassElement &&   sucCls.forEach((s) => errorClassElement.classList.add(s))};
     }
 
     /***
@@ -297,12 +313,28 @@ export default function Pristine(form, config, live){
             elem.parentNode.removeChild(elem);
         });
         Array.from(self.form.querySelectorAll('.' + self.config.classTo)).map(function (elem) {
-            elem.classList.remove(self.config.successClass);
-            elem.classList.remove(self.config.errorClass);
+           // elem.classList.remove(self.config.successClass);
+            // elem.classList.remove(self.config.errorClass);
+            let errCls = createClassarray(self.config.errorClass);
+            let sucCls = createClassarray(self.config.successClass);                        
+            if(errCls.length) { sucCls.forEach((s) => elem.classList.remove(s)) };
+            if(errCls.length) { errCls.forEach((e) => elem.classList.remove(e)) };
         });
-
+        isreset = true;
     };
 
+    
+    /***
+     * Convert the multipl Classes into an array and remove spaces
+     * if the classstring is empty array
+     */    
+    function createClassarray(classstring){
+        let cls = classstring.split(" ").filter(e => e);    
+        if (cls.length) return cls;
+        return ([]);
+    }
+    
+    
     /***
      * Resets the errors and deletes all pristine fields
      */
