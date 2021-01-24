@@ -120,7 +120,7 @@ Now you can assign it to your inputs like this
 ```html
 <input required data-pristine-required-message="My custom message"/>
 ```
-Add an attribute like `data-pristine-<ValidatorName>-message`with the custom message as value to show custom error messages. You can add custom messages like this for as many validators as you need. Here `ValidatorName` means `required`, `email`, `min`, `max` etc.
+Add an attribute like `data-pristine-<ValidatorName>-message`with the custom message as value to show custom error messages. You can add custom messages like this for as many validators as you need. Here `ValidatorName` means `required`, `email`, `minlength`, `maxlength` etc.
 
 ## Built-in validators
 
