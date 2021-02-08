@@ -7,7 +7,8 @@ let defaultConfig = {
     successClass: 'has-success',
     errorTextParent: 'form-group',
     errorTextTag: 'div',
-    errorTextClass: 'text-help'
+    errorTextClass: 'text-help',
+    liveAfterFirstValitation: true,
 };
 
 const PRISTINE_ERROR = 'pristine-error';
@@ -41,6 +42,7 @@ _('equals', { fn: (val, otherFieldSelector) => { let other = document.querySelec
 export default function Pristine(form, config, live){
 
     let self = this;
+    let wasValidated = false;
 
     init(form, config, live);
 
@@ -80,7 +82,11 @@ export default function Pristine(form, config, live){
             fns.sort( (a, b) => b.priority - a.priority);
 
             self.live && input.addEventListener((!~['radio', 'checkbox'].indexOf(input.getAttribute('type')) ? 'input':'change'), function(e) {
-                self.validate(e.target);
+                if (self.config.liveAfterFirstValitation && wasValidated) {
+                    self.validate(e.target);
+                } else if (!self.config.liveAfterFirstValitation) {
+                    self.validate(e.target);
+                }
             }.bind(self));
 
             return input.pristine = {input, validators: fns, params, messages, self};
@@ -106,15 +112,16 @@ export default function Pristine(form, config, live){
      * @param silent => do not show error messages, just return true/false
      * @returns {boolean} return true when valid false otherwise
      */
-    self.validate = function(input, silent){
-        silent = (input && silent === true) || input === true;
+    self.validate = function(input = null, silent = false){
         let fields = self.fields;
-        if (input !== true && input !== false){
+        if (input){
             if (input instanceof HTMLElement) {
                 fields = [input.pristine];
             } else if (input instanceof NodeList || input instanceof (window.$ || Array) || input instanceof Array){
                 fields = Array.from(input).map(el => el.pristine);
             }
+        } else {
+            wasValidated = true;
         }
 
         let valid = true;

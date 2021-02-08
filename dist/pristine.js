@@ -110,7 +110,7 @@
     function Pristine(form, config, live) {
 
         var self = this;
-        var wasValitated = false;
+        var wasValidated = false;
 
         init(form, config, live);
 
@@ -151,7 +151,7 @@
                 });
 
                 self.live && input.addEventListener(!~['radio', 'checkbox'].indexOf(input.getAttribute('type')) ? 'input' : 'change', function (e) {
-                    if (self.config.liveAfterFirstValitation && wasValitated) {
+                    if (self.config.liveAfterFirstValitation && wasValidated) {
                         self.validate(e.target);
                     } else if (!self.config.liveAfterFirstValitation) {
                         self.validate(e.target);
@@ -194,7 +194,7 @@
                     });
                 }
             } else {
-                wasValitated = true;
+                wasValidated = true;
             }
 
             var valid = true;
