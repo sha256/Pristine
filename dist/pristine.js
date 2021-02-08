@@ -17,7 +17,8 @@
             min: "Minimum value for this field is ${1}",
             max: "Maximum value for this field is ${1}",
             pattern: "Please match the requested format",
-            equals: "The two fields do not match"
+            equals: "The two fields do not match",
+            default: "Please enter a correct value"
         }
     };
 
@@ -53,7 +54,8 @@
         successClass: 'has-success',
         errorTextParent: 'form-group',
         errorTextTag: 'div',
-        errorTextClass: 'text-help'
+        errorTextClass: 'text-help',
+        liveAfterFirstValitation: true
     };
 
     var PRISTINE_ERROR = 'pristine-error';
@@ -108,6 +110,7 @@
     function Pristine(form, config, live) {
 
         var self = this;
+        var wasValidated = false;
 
         init(form, config, live);
 
@@ -148,7 +151,11 @@
                 });
 
                 self.live && input.addEventListener(!~['radio', 'checkbox'].indexOf(input.getAttribute('type')) ? 'input' : 'change', function (e) {
-                    self.validate(e.target);
+                    if (self.config.liveAfterFirstValitation && wasValidated) {
+                        self.validate(e.target);
+                    } else if (!self.config.liveAfterFirstValitation) {
+                        self.validate(e.target);
+                    }
                 }.bind(self));
 
                 return input.pristine = { input: input, validators: fns, params: params, messages: messages, self: self };
@@ -173,10 +180,12 @@
          * @param silent => do not show error messages, just return true/false
          * @returns {boolean} return true when valid false otherwise
          */
-        self.validate = function (input, silent) {
-            silent = input && silent === true || input === true;
+        self.validate = function () {
+            var input = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+            var silent = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
             var fields = self.fields;
-            if (input !== true && input !== false) {
+            if (input) {
                 if (input instanceof HTMLElement) {
                     fields = [input.pristine];
                 } else if (input instanceof NodeList || input instanceof (window.$ || Array) || input instanceof Array) {
@@ -184,6 +193,8 @@
                         return el.pristine;
                     });
                 }
+            } else {
+                wasValidated = true;
             }
 
             var valid = true;
@@ -250,6 +261,8 @@
                         errors.push(tmpl.apply(field.messages[currentLocale][validator.name], params));
                     } else if (lang[currentLocale] && lang[currentLocale][validator.name]) {
                         errors.push(tmpl.apply(lang[currentLocale][validator.name], params));
+                    } else {
+                        errors.push(tmpl.apply(lang[currentLocale].default, params));
                     }
 
                     if (validator.halt === true) {

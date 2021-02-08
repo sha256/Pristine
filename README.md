@@ -11,7 +11,7 @@ Some examples of use can be found [here](http://pristine.js.org/demo.html).
 
 Include the javascript file in your html head or just before the closing body tag
 
-```html 
+```html
 <script src="dist/pristine.js"  type="text/javascript"></script>
 ```
 
@@ -27,7 +27,7 @@ window.onload = function () {
 
     form.addEventListener('submit', function (e) {
        e.preventDefault();
-       
+
        // check if the form is valid
        var valid = pristine.validate(); // returns true or false
 
@@ -40,13 +40,13 @@ window.onload = function () {
 
 It automatically validates `required, min, max, minlength, maxlength` attributes and the value of type attributes
  like `email, number` and more..
- 
+
 
 `Pristine` takes `3` parameters
 
 - **form** The form element
 
-- **config** An object containing the configuration. Default is bootstrap's configuration which is 
+- **config** An object containing the configuration. Default is bootstrap's configuration which is
 
 <a id="defaultConfig"></a>
 
@@ -61,7 +61,9 @@ let defaultConfig = {
     // type of element to create for the error text
     errorTextTag: 'div',
     // class of the error text element
-    errorTextClass: 'text-help' 
+    errorTextClass: 'text-help',
+    // enable live validation after first form submission (requires live parameter to be true)
+    liveAfterFirstValitation: true
 };
 ```
 
@@ -106,11 +108,11 @@ pristine.addValidator(elem, function(value) {
 Pristine.addValidator("my-range", function(value, param1, param2) {
     // here `this` refers to the respective input element
     return parseInt(param1) <= value && value <= parseInt(param2)
-    
+
 }, "The value (${0}) must be between ${1} and ${2}", 5, false);
 ```
 
-Now you can assign it to your inputs like this 
+Now you can assign it to your inputs like this
 
 ```html
 <input type="text" class="form-control" data-pristine-my-range="10,30" />
@@ -142,7 +144,7 @@ Add an attribute like `data-pristine-<ValidatorName>-message`with the custom mes
 ## API
 **Pristine(form, config, live)**
 <br/>*Constructor*
-    
+
 | Parameter | Default  | Required? | Description|
 | ---       | ----     |   -----   | ----       |
 | `form`| - |<center>✔</center> |The form element|
@@ -236,15 +238,15 @@ Add an attribute like `data-pristine-<ValidatorName>-message`with the custom mes
 
 **pristine.reset()**
 <br/>*Reset the errors in the form*
-    
-    
+
+
 <br/>
 
 **pristine.destroy()**
 <br/>*Destroy the pristine object*
-    
+
 <br/><br/>
-> The goal of this library is not to provide every possible type of validation and thus becoming a bloat. 
+> The goal of this library is not to provide every possible type of validation and thus becoming a bloat.
 > The goal is to provide most common types of validations and a neat way to add custom validators.
 
 ## License
