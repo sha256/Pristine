@@ -226,6 +226,8 @@ export default function Pristine(form, config, live){
         let errorTextParent = null, errorTextElement = null;
         if (self.config.classTo === self.config.errorTextParent){
             errorTextParent = errorClassElement;
+        } else if (!self.config.classTo) {
+            errorTextParent = findAncestor(field.input, self.config.errorTextParent);
         } else {
             errorTextParent = errorClassElement.querySelector('.' + self.config.errorTextParent);
         }
@@ -296,7 +298,16 @@ export default function Pristine(form, config, live){
         Array.from(self.form.querySelectorAll('.' + PRISTINE_ERROR)).map(function (elem) {
             elem.parentNode.removeChild(elem);
         });
-        Array.from(self.form.querySelectorAll('.' + self.config.classTo)).map(function (elem) {
+
+        var elements = [];
+        if (self.config.classTo) {
+            elements = Array.from(self.form.querySelectorAll('.' + self.config.classTo));
+        } else {
+            elements = self.fields.map(function (field) {
+                return field.input;
+            });
+        }
+        elements.map(function (elem) {
             elem.classList.remove(self.config.successClass);
             elem.classList.remove(self.config.errorClass);
         });
