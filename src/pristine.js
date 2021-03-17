@@ -121,7 +121,7 @@ export default function Pristine(form, config, live){
 
         for(let i = 0; fields[i]; i++) {
             let field = fields[i];
-            if (_validateField(field)){
+            if (typeof field === 'object' && _validateField(field)){
                 !silent && _showSuccess(field);
             } else {
                 valid = false;
