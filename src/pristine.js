@@ -76,7 +76,11 @@ export default function Pristine(form, config, live){
             fns.sort( (a, b) => b.priority - a.priority);
 
             self.live && input.addEventListener((!~['radio', 'checkbox'].indexOf(input.getAttribute('type')) ? 'input':'change'), function(e) {
-                self.validate(e.target);
+                e.target.active = true;
+            }.bind(self));
+
+            self.live && input.addEventListener((!~['radio', 'checkbox'].indexOf(input.getAttribute('type')) ? 'blur':'change'), function(e) {
+                e.target.active && self.validate(e.target);
             }.bind(self));
 
             return input.pristine = {input, validators: fns, params, messages, self};
