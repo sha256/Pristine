@@ -245,11 +245,18 @@ export default function Pristine(form, config, live){
         let errorElements = _getErrorElements(field);
         let errorClassElement = errorElements[0], errorTextElement = errorElements[1];
 
+        const { input } = field;
+        const inputId = input.id || Math.floor(new Date().valueOf() * Math.random());
+        const errorId = `error-${inputId}`;
+
         if(errorClassElement){
             errorClassElement.classList.remove(self.config.successClass);
             errorClassElement.classList.add(self.config.errorClass);
+            input.setAttribute('aria-describedby', errorId);
+            input.setAttribute('aria-invalid', 'true');
         }
         if (errorTextElement){
+            errorTextElement.setAttribute('id', errorId);
             errorTextElement.innerHTML = field.errors.join('<br/>');
             errorTextElement.style.display = errorTextElement.pristineDisplay || '';
         }
@@ -269,12 +276,17 @@ export default function Pristine(form, config, live){
     function _removeError(field){
         let errorElements = _getErrorElements(field);
         let errorClassElement = errorElements[0], errorTextElement = errorElements[1];
+        const { input } = field
+
         if (errorClassElement){
             // IE > 9 doesn't support multiple class removal
             errorClassElement.classList.remove(self.config.errorClass);
             errorClassElement.classList.remove(self.config.successClass);
+            input.removeAttribute('aria-describedby');
+            input.removeAttribute('aria-invalid');
         }
         if (errorTextElement){
+            errorTextElement.removeAttribute('id');
             errorTextElement.innerHTML = '';
             errorTextElement.style.display = 'none';
         }
