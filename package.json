@@ -1,7 +1,7 @@
 {
-  "name": "pristinejs",
-  "version": "0.1.9",
-  "description": "A tiny vanilla javascript form validation library",
+  "name": "pristinejs-a11y",
+  "version": "1.0.0",
+  "description": "A tiny vanilla javascript form validation library foreked from @prestinejs",
   "main": "dist/pristine.js",
   "scripts": {
     "test": "karma start karma.conf.js --single-run",
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sha256/Pristine.git"
+    "url": "git+https://github.com/enriqueprieto/Pristine-a11y.git"
   },
   "keywords": [
     "vanilla",
@@ -18,12 +18,12 @@
     "micro",
     "tiny"
   ],
-  "author": "Shamim Hasnath",
+  "author": "Enrique Prieto",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/sha256/Pristine/issues"
+    "url": "https://github.com/enriqueprieto/Pristine-a11y/issues"
   },
-  "homepage": "https://github.com/sha256/Pristine#readme",
+  "homepage": "https://github.com/enriqueprieto/Pristine-a11y#readme",
   "devDependencies": {
     "babel-core": "^6.26.0",
     "babel-plugin-external-helpers": "^6.22.0",
