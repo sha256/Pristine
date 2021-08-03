@@ -257,6 +257,7 @@ export default function Pristine(form, config, live){
         }
         if (errorTextElement){
             errorTextElement.setAttribute('id', errorId);
+            errorTextElement.setAttribute('role', 'alert');
             errorTextElement.innerHTML = field.errors.join('<br/>');
             errorTextElement.style.display = errorTextElement.pristineDisplay || '';
         }
@@ -287,6 +288,7 @@ export default function Pristine(form, config, live){
         }
         if (errorTextElement){
             errorTextElement.removeAttribute('id');
+            errorTextElement.removeAttribute('role');
             errorTextElement.innerHTML = '';
             errorTextElement.style.display = 'none';
         }
