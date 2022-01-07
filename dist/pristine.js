@@ -59,7 +59,7 @@
     };
 
     var PRISTINE_ERROR = 'pristine-error';
-    var SELECTOR = "input:not([type^=hidden]):not([type^=submit]), select, textarea";
+    var SELECTOR = "input:not([type^=hidden]):not([type^=submit]):not([type^=button]), select, textarea";
     var ALLOWED_ATTRIBUTES = ["required", "min", "max", 'minlength', 'maxlength', 'pattern'];
     var EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
