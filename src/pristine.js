@@ -12,7 +12,7 @@ let defaultConfig = {
 };
 
 const PRISTINE_ERROR = 'pristine-error';
-const SELECTOR = "input:not([type^=hidden]):not([type^=submit]), select, textarea";
+const SELECTOR = "input:not([type^=hidden]):not([type^=submit]):not([type^=button]), select, textarea";
 const ALLOWED_ATTRIBUTES = ["required", "min", "max", 'minlength', 'maxlength', 'pattern'];
 const EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 
