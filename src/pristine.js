@@ -12,7 +12,7 @@ let defaultConfig = {
 };
 
 const PRISTINE_ERROR = 'pristine-error';
-const SELECTOR = "input:not([type^=hidden]):not([type^=submit]):not([type^=button]), select, textarea";
+const SELECTOR = "input:not([disabled]):not([type^=hidden]):not([type^=submit]):not([type^=button]), select, textarea";
 const ALLOWED_ATTRIBUTES = ["required", "min", "max", 'minlength', 'maxlength', 'pattern'];
 const EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 
@@ -81,7 +81,7 @@ export default function Pristine(form, config, live){
 
             fns.sort( (a, b) => b.priority - a.priority);
 
-            self.live && input.addEventListener((!~['radio', 'checkbox'].indexOf(input.getAttribute('type')) ? 'input':'change'), function(e) {
+            self.live && input.addEventListener('change', function(e) {
                 if (self.config.liveAfterFirstValitation && wasValidated) {
                     self.validate(e.target);
                 } else if (!self.config.liveAfterFirstValitation) {
