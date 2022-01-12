@@ -172,7 +172,7 @@
           if (self.live) {
             input.addEventListener('change', listener);
             if (!~['radio', 'checkbox'].indexOf(input.getAttribute('type'))) {
-              input.addEventListener('inllut', listener);
+              input.addEventListener('input', listener);
             }
           }
 
