@@ -22,7 +22,8 @@ const ALLOWED_ATTRIBUTES = [
   'maxlength',
   'pattern',
 ];
-const EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+const EMAIL_REGEX =
+  /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
 const MESSAGE_REGEX = /-message(?:-([a-z]{2}(?:_[A-Z]{2})?))?/; // matches, -message, -message-en, -message-en_US
 let currentLocale = 'en';
@@ -188,7 +189,7 @@ export default function Pristine(form, config, live) {
 
     for (let i = 0; fields[i]; i++) {
       let field = fields[i];
-      if (_validateField(field)) {
+      if (self.validateField(field)) {
         !silent && _showSuccess(field);
       } else {
         valid = false;
@@ -227,7 +228,7 @@ export default function Pristine(form, config, live) {
    * @returns {boolean}
    * @private
    */
-  function _validateField(field) {
+  self.validateField = function (field) {
     let errors = [];
     let valid = true;
     for (let i = 0; field.validators[i]; i++) {
@@ -269,7 +270,7 @@ export default function Pristine(form, config, live) {
     }
     field.errors = errors;
     return valid;
-  }
+  };
 
   /***
    * Add a validator to a specific dom element in a form
@@ -349,7 +350,7 @@ export default function Pristine(form, config, live) {
     _showError(input.pristine);
   };
 
-  function _removeError(field) {
+  self.removeError = function (field) {
     let errorElements = _getErrorElements(field);
     let errorClassElement = errorElements[0],
       errorTextElement = errorElements[1];
@@ -363,10 +364,10 @@ export default function Pristine(form, config, live) {
       errorTextElement.style.display = 'none';
     }
     return errorElements;
-  }
+  };
 
   function _showSuccess(field) {
-    let errorClassElement = _removeError(field)[0];
+    let errorClassElement = self.removeError(field)[0];
     errorClassElement &&
       errorClassElement.classList.add(self.config.successClass);
   }

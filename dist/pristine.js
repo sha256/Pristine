@@ -225,7 +225,7 @@
 
         for (var i = 0; fields[i]; i++) {
           var field = fields[i];
-          if (_validateField(field)) {
+          if (self.validateField(field)) {
             !silent && _showSuccess(field);
           } else {
             valid = false;
@@ -264,7 +264,7 @@
        * @returns {boolean}
        * @private
        */
-      function _validateField(field) {
+      self.validateField = function (field) {
         var errors = [];
         var valid = true;
         for (var i = 0; field.validators[i]; i++) {
@@ -296,7 +296,7 @@
         }
         field.errors = errors;
         return valid;
-      }
+      };
 
       /***
        * Add a validator to a specific dom element in a form
@@ -375,7 +375,7 @@
         _showError(input.pristine);
       };
 
-      function _removeError(field) {
+      self.removeError = function (field) {
         var errorElements = _getErrorElements(field);
         var errorClassElement = errorElements[0],
             errorTextElement = errorElements[1];
@@ -389,10 +389,10 @@
           errorTextElement.style.display = 'none';
         }
         return errorElements;
-      }
+      };
 
       function _showSuccess(field) {
-        var errorClassElement = _removeError(field)[0];
+        var errorClassElement = self.removeError(field)[0];
         errorClassElement && errorClassElement.classList.add(self.config.successClass);
       }
 
