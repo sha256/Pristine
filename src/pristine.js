@@ -27,7 +27,7 @@ const _ = function (name, validator) {
 };
 
 _('text', { fn: (val) => true, priority: 0});
-_('required', { fn: function(val){ return (this.type === 'radio' || this.type === 'checkbox') ? groupedElemCount(this) : val !== undefined && val !== ''}, priority: 99, halt: true});
+_('required', { fn: function(val){ return (this.type === 'radio' || this.type === 'checkbox') ? groupedElemCount(this) : val !== undefined && val.trim() !== ''}, priority: 99, halt: true});
 _('email', { fn: (val) => !val || EMAIL_REGEX.test(val)});
 _('number', { fn: (val) => !val || !isNaN(parseFloat(val)), priority: 2 });
 _('integer', { fn: (val) => !val || /^\d+$/.test(val) });
