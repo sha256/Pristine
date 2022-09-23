@@ -76,7 +76,7 @@
             return true;
         }, priority: 0 });
     _('required', { fn: function fn(val) {
-            return this.type === 'radio' || this.type === 'checkbox' ? groupedElemCount(this) : val !== undefined && val !== '';
+            return this.type === 'radio' || this.type === 'checkbox' ? groupedElemCount(this) : val !== undefined && val.trim() !== '';
         }, priority: 99, halt: true });
     _('email', { fn: function fn(val) {
             return !val || EMAIL_REGEX.test(val);
