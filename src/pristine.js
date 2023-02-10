@@ -248,6 +248,9 @@ export default function Pristine(form, config, live){
         if(errorClassElement){
             errorClassElement.classList.remove(self.config.successClass);
             errorClassElement.classList.add(self.config.errorClass);
+            
+            field.input.classList.remove(self.config.successClass);
+	    field.input.classList.add(self.config.errorClass);
         }
         if (errorTextElement){
             errorTextElement.innerHTML = field.errors.join('<br/>');
@@ -273,6 +276,9 @@ export default function Pristine(form, config, live){
             // IE > 9 doesn't support multiple class removal
             errorClassElement.classList.remove(self.config.errorClass);
             errorClassElement.classList.remove(self.config.successClass);
+            
+            field.input.classList.remove(self.config.errorClass);
+	    field.input.classList.remove(self.config.successClass);
         }
         if (errorTextElement){
             errorTextElement.innerHTML = '';
@@ -284,6 +290,8 @@ export default function Pristine(form, config, live){
     function _showSuccess(field){
         let errorClassElement = _removeError(field)[0];
         errorClassElement && errorClassElement.classList.add(self.config.successClass);
+        
+        field.input.classList.add(self.config.successClass);
     }
 
     /***
