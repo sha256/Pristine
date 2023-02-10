@@ -222,13 +222,13 @@ export default function Pristine(form, config, live){
         if (field.errorElements){
             return field.errorElements;
         }
-        let errorClassElement = findAncestor(field.input, self.config.classTo);
-        let errorTextParent = null, errorTextElement = null;
-        if (self.config.classTo === self.config.errorTextParent){
-            errorTextParent = errorClassElement;
+        let errorClassElement = null, errorTextElement = null;
+        if (self.config.classTo === self.config.errorTextParent) {
+            errorClassElement = findAncestor(field.input, self.config.classTo);
         } else {
-            errorTextParent = errorClassElement.querySelector('.' + self.config.errorTextParent);
+            errorClassElement = findAncestor(field.input, self.config.errorTextParent);
         }
+        let errorTextParent = errorClassElement;
         if (errorTextParent){
             errorTextElement = errorTextParent.querySelector('.' + PRISTINE_ERROR);
             if (!errorTextElement){
@@ -245,9 +245,14 @@ export default function Pristine(form, config, live){
         let errorElements = _getErrorElements(field);
         let errorClassElement = errorElements[0], errorTextElement = errorElements[1];
 
-        if(errorClassElement){
-            errorClassElement.classList.remove(self.config.successClass);
-            errorClassElement.classList.add(self.config.errorClass);
+        if (errorClassElement) {
+            if (self.config.classTo === self.config.errorTextParent) {
+                errorClassElement.classList.remove(self.config.successClass);
+                errorClassElement.classList.add(self.config.errorClass);
+            } else {
+                field.input.classList.remove(self.config.successClass);
+                field.input.classList.add(self.config.errorClass);
+            }
         }
         if (errorTextElement){
             errorTextElement.innerHTML = field.errors.join('<br/>');
@@ -269,10 +274,16 @@ export default function Pristine(form, config, live){
     function _removeError(field){
         let errorElements = _getErrorElements(field);
         let errorClassElement = errorElements[0], errorTextElement = errorElements[1];
-        if (errorClassElement){
-            // IE > 9 doesn't support multiple class removal
-            errorClassElement.classList.remove(self.config.errorClass);
-            errorClassElement.classList.remove(self.config.successClass);
+        if (errorClassElement) {
+            if (self.config.classTo === self.config.errorTextParent) {
+                // IE > 9 doesn't support multiple class removal
+                errorClassElement.classList.remove(self.config.errorClass);
+                errorClassElement.classList.remove(self.config.successClass);
+            } else {
+                // IE > 9 doesn't support multiple class removal
+                field.input.classList.remove(self.config.errorClass);
+                field.input.classList.remove(self.config.successClass);
+            }
         }
         if (errorTextElement){
             errorTextElement.innerHTML = '';
@@ -283,7 +294,11 @@ export default function Pristine(form, config, live){
 
     function _showSuccess(field){
         let errorClassElement = _removeError(field)[0];
-        errorClassElement && errorClassElement.classList.add(self.config.successClass);
+        if (self.config.classTo === self.config.errorTextParent) {
+            errorClassElement && errorClassElement.classList.add(self.config.successClass);
+        } else {
+            errorClassElement && field.input.classList.add(self.config.successClass);
+        }
     }
 
     /***
