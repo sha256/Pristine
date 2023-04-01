@@ -17,7 +17,8 @@
             min: "Minimum value for this field is ${1}",
             max: "Maximum value for this field is ${1}",
             pattern: "Please match the requested format",
-            equals: "The two fields do not match"
+            equals: "The two fields do not match",
+            default: "Please enter a correct value"
         }
     };
 
@@ -75,7 +76,7 @@
             return true;
         }, priority: 0 });
     _('required', { fn: function fn(val) {
-            return this.type === 'radio' || this.type === 'checkbox' ? groupedElemCount(this) : val !== undefined && val !== '';
+            return this.type === 'radio' || this.type === 'checkbox' ? groupedElemCount(this) : val !== undefined && val.trim() !== '';
         }, priority: 99, halt: true });
     _('email', { fn: function fn(val) {
             return !val || EMAIL_REGEX.test(val);
@@ -250,6 +251,8 @@
                         errors.push(tmpl.apply(field.messages[currentLocale][validator.name], params));
                     } else if (lang[currentLocale] && lang[currentLocale][validator.name]) {
                         errors.push(tmpl.apply(lang[currentLocale][validator.name], params));
+                    } else {
+                        errors.push(tmpl.apply(lang[currentLocale].default, params));
                     }
 
                     if (validator.halt === true) {
@@ -317,11 +320,20 @@
             var errorClassElement = errorElements[0],
                 errorTextElement = errorElements[1];
 
+            var input = field.input;
+
+            var inputId = input.id || Math.floor(new Date().valueOf() * Math.random());
+            var errorId = 'error-' + inputId;
+
             if (errorClassElement) {
                 errorClassElement.classList.remove(self.config.successClass);
                 errorClassElement.classList.add(self.config.errorClass);
+                input.setAttribute('aria-describedby', errorId);
+                input.setAttribute('aria-invalid', 'true');
             }
             if (errorTextElement) {
+                errorTextElement.setAttribute('id', errorId);
+                errorTextElement.setAttribute('role', 'alert');
                 errorTextElement.innerHTML = field.errors.join('<br/>');
                 errorTextElement.style.display = errorTextElement.pristineDisplay || '';
             }
@@ -342,12 +354,19 @@
             var errorElements = _getErrorElements(field);
             var errorClassElement = errorElements[0],
                 errorTextElement = errorElements[1];
+            var input = field.input;
+
+
             if (errorClassElement) {
                 // IE > 9 doesn't support multiple class removal
                 errorClassElement.classList.remove(self.config.errorClass);
                 errorClassElement.classList.remove(self.config.successClass);
+                input.removeAttribute('aria-describedby');
+                input.removeAttribute('aria-invalid');
             }
             if (errorTextElement) {
+                errorTextElement.removeAttribute('id');
+                errorTextElement.removeAttribute('role');
                 errorTextElement.innerHTML = '';
                 errorTextElement.style.display = 'none';
             }
