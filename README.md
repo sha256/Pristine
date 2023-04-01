@@ -158,7 +158,7 @@ Add an attribute like `data-pristine-<ValidatorName>-message`with the custom mes
 | Parameter | Default  | Required? | Description|
 | ---       | ----     |   ----    | ---        |
 | `inputs`| - | <center>✕</center> | When not given, full form is validated. inputs can be one DOM element or a collection of DOM elements returned by `document.getElement...`, `document.querySelector...` or even `jquery` dom|
-| `silent`  | `false`|<center>✕</center>| Does not show error error messages when `silent` is `true`|
+| `silent`  | `false`|<center>✕</center>| Does not show error messages when `silent` is `true`|
 
 
 <br/>
