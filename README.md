@@ -247,6 +247,10 @@ Add an attribute like `data-pristine-<ValidatorName>-message`with the custom mes
 > The goal of this library is not to provide every possible type of validation and thus becoming a bloat. 
 > The goal is to provide most common types of validations and a neat way to add custom validators.
 
+## Compatibility
+
+- IE 11 : add the `Array.from` & `String.prototype.endsWith` polyfills or use [this link](https://polyfill.io/v3/polyfill.min.js?features=Array.from%2CString.prototype.endsWith) thanks to Polyfill.io
+
 ## License
 
 [MIT](http://opensource.org/licenses/MIT)
