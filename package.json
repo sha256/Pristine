@@ -1,0 +1,44 @@
+{
+  "name": "pristinejs",
+  "version": "1.1.0",
+  "description": "A tiny vanilla javascript form validation library",
+  "main": "dist/pristine.js",
+  "scripts": {
+    "test": "karma start karma.conf.js --single-run",
+    "build": "rollup -c"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sha256/Pristine.git"
+  },
+  "keywords": [
+    "vanilla",
+    "form",
+    "validation",
+    "micro",
+    "tiny"
+  ],
+  "author": "Shamim Hasnath",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sha256/Pristine/issues"
+  },
+  "homepage": "https://github.com/sha256/Pristine#readme",
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-plugin-external-helpers": "^6.22.0",
+    "babel-preset-env": "^1.6.1",
+    "jasmine": "^3.6.1",
+    "jasmine-core": "^3.6.0",
+    "karma": "^5.1.1",
+    "karma-chrome-launcher": "^3.1.0",
+    "karma-jasmine": "^4.0.1",
+    "karma-jasmine-html-reporter": "^1.5.4",
+    "karma-rollup-preprocessor": "^7.0.5",
+    "karma-spec-reporter": "0.0.32",
+    "rollup": "^2.26.2",
+    "rollup-plugin-babel": "^3.0.2",
+    "rollup-plugin-terser": "^7.0.0"
+  },
+  "dependencies": {}
+}
