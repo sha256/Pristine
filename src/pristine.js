@@ -56,8 +56,10 @@ export default function Pristine(form, config, live){
             let fns = [];
             let params = {};
             let messages = {};
+            let dataPristineAttr = [];
 
             [].forEach.call(input.attributes, function (attr) {
+                if (dataPristineAttr.includes(attr.name)) return;
                 if (/^data-pristine-/.test(attr.name)) {
                     let name = attr.name.substr(14);
                     let messageMatch = name.match(MESSAGE_REGEX);
@@ -69,6 +71,7 @@ export default function Pristine(form, config, live){
                         return;
                     }
                     if (name === 'type') name = attr.value;
+                    dataPristineAttr.push(name);
                     _addValidatorToField(fns, params, name, attr.value);
                 } else if (~ALLOWED_ATTRIBUTES.indexOf(attr.name)){
                     _addValidatorToField(fns, params, attr.name, attr.value);
